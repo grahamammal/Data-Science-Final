@@ -1,0 +1,16 @@
+---
+title: "Project Checkpoint 1"
+author: "Marshall Graham"
+date: "November 24, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+```
+
