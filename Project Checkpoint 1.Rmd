@@ -12,5 +12,85 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(urltools)
+library(jsonlite)
+library(ggmap)
+library(rvest)
+
 ```
+
+
+
+
+Read in data on NiceRide, the bike share for the twin cities
+```{r, cache=TRUE}
+
+niceRide2016<-read_csv("Nice_ride_data_2016_season\\Nice_ride_data_2016_season\\Nice_ride_trip_history_2016_season.csv")
+niceRideLocations<-read_csv("Nice_ride_data_2016_season\\Nice_ride_data_2016_season\\Nice_Ride_2016_Station_Locations.csv")
+
+```
+
+```{r}
+nrow(niceRide2016)
+```
+Read in data on MetroTransit
+```{r, cache=TRUE}
+metroStops<-read_csv("bus-stops-Oct-2017.csv")
+metroRidership<-read_csv("ridership-route-day-Jan2014-Oct2017.csv")
+head(metroStops)
+head(metroRidership)
+
+
+```
+
+
+Visualize where the stops and stations are in the twin cities
+```{r, cache=TRUE}
+twinCitiesMap<-get_map(location="Minneapolis", zoom= 10)
+
+ggmap(twinCitiesMap)+
+   geom_point(data=metroStops, aes(x=site_longitude, y=site_latitude))
+
+
+#about 100 ft in degrees latitude
+ft100<-.0002744
+
+ggmap(twinCitiesMap)+
+   geom_point(data=niceRideLocations, aes(x=Longitude, y=Latitude))
+
+
+```
+
+Limit the bus stops to only stops within a rectangle that encloses the bike stations
+```{r}
+minBikeLat<-min(niceRideLocations$Latitude)-ft100
+maxBikeLat<-max(niceRideLocations$Latitude)+ft100
+
+minBikeLong<-min(niceRideLocations$Longitude)-ft100
+maxBikeLong<-max(niceRideLocations$Longitude)+ft100
+
+metroStopsLimited<-metroStops%>%
+   filter(site_longitude>minBikeLong&site_longitude<maxBikeLong)%>%
+   filter(site_latitude>minBikeLat&site_latitude<maxBikeLat)
+
+ggmap(twinCitiesMap)+
+   geom_point(data=metroStopsLimited, aes(x=site_longitude, y=site_latitude))
+
+nrow(metroStopsLimited)
+
+
+
+```
+
+Read in data on weather for 2016
+```{r}
+MinneapolisWeather<-read_csv(file="Minneapolis Weather.txt", col_names = c("date", "maxTemp","minTemp","precip","snow","snowDepth"))
+
+head(MinneapolisWeather)
+```
+
+
+
 
