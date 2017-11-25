@@ -159,4 +159,5 @@ head(niceRideDay)
 ggplot(niceRideDay, aes(x=tempDiff, y=numRiders))+
    geom_smooth()
 
+
 ```
