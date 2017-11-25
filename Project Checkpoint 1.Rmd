@@ -8,7 +8,36 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+#1
+#Group members: Marshall, Zain, Colleen, Vishal
 
+#2
+#a. bikeshare patterns
+
+#b. Research questions:
+1. How do bikeshare patterns vary depending on weather compared to buses?
+2. Notice if bikeshare usage goes up when a bus vomits people nearby?
+
+#ALTERNATIVE QUESTIONS: 
+-How do usage patterns of bikes and public transit vary from the norm on public holidays?
+-Is metro transit usage affected when the bikeshare closes down for the year (or is it just seasonal)?
+
+#Datasets we will use
+Research question 1:
+Data Source: metaweather
+Data Description: weather patterns for a certain day in Minneapolis
+Data Limitations: challenging to get at all 365 days with ease (without going through them one at a time)
+Data dimensions: 71x15 (for one day,)
+
+Data Source: Nextrip data from Metrotransit
+Data Description: 
+Data Limitations:
+Data dimensions:
+
+Data Source: Niceride 2016 data
+Data Description:
+Data Limitations:
+Data dimensions: >432,284x8
 
 ```{r}
 library(tidyverse)
