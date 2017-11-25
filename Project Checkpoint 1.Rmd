@@ -86,11 +86,77 @@ nrow(metroStopsLimited)
 
 Read in data on weather for 2016
 ```{r}
+
+#source: http://www.dnr.state.mn.us/climate/twin_cities/listings.html
 MinneapolisWeather<-read_csv(file="Minneapolis Weather.txt", col_names = c("date", "maxTemp","minTemp","precip","snow","snowDepth"))
 
-head(MinneapolisWeather)
+MinneapolisWeather<-MinneapolisWeather%>%
+   mutate(precip=as.double(replace(precip,precip=="T",0)))%>%
+   mutate(snow=as.double(replace(snow,snow=="T",0)))%>%
+   mutate(snowDepth=as.double(replace(snowDepth,snowDepth=="T",0)))
+
+```
+
+```{r}
+
+head(metroRidership)
+class(metroRidership$dtDate)
+class(MinneapolisWeather$date)
+
+metroRidership<-metroRidership%>%
+   mutate(dtDate=as.Date(dtDate))
+WeatherRiders<-metroRidership%>%
+   left_join(MinneapolisWeather, by=c("dtDate"="date"))
+
+AvgDayTemp<-MinneapolisWeather%>%
+   mutate(day=yday(date))%>%
+   group_by(day)%>%
+   summarize(dayTemp=sum((maxTemp+minTemp)/2)/n())
+
+head(AvgDayTemp)
+nrow(AvgDayTemp)
+WeatherRiders<-WeatherRiders%>%
+   mutate(day=yday(dtDate))%>%
+   left_join(AvgDayTemp, by="day")%>%
+   mutate(tempDiff=(maxTemp+minTemp)/2-dayTemp)%>%
+   filter(Schedule!="Holiday")
+
+WeatherRiders1<-WeatherRiders%>%
+   filter()%>% 
+   mutate(day=as.factor(day), Route=as.factor(Route))
+
+head(WeatherRiders1)
+
+ggplot(WeatherRiders1, aes(x=tempDiff, y=Total_Riders))+
+   geom_smooth()
 ```
 
 
+Doing same weather analysis with ridership
+First get ridership of bikes by day
+
+```{r}
+head(niceRide2016)
 
 
+niceRideDay<-niceRide2016%>%
+   mutate(startDate=niceRide2016$`Start date`)%>%
+   select("startDate")%>%
+   mutate(startDate=as.Date(startDate, "%m/%d/%Y"))%>%
+   group_by(startDate)%>%
+   summarize(numRiders=n())
+
+
+head(niceRideDay)
+
+niceRideDay<-niceRideDay%>%
+   left_join(MinneapolisWeather, by=c("startDate"="date"))%>%
+   mutate(day=yday(startDate))%>%
+   left_join(AvgDayTemp,by="day")%>% 
+   mutate(tempDiff=(maxTemp+minTemp)/2-dayTemp)
+
+head(niceRideDay)
+ggplot(niceRideDay, aes(x=tempDiff, y=numRiders))+
+   geom_smooth()
+
+```
