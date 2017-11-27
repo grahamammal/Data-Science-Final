@@ -97,16 +97,40 @@ MinneapolisWeather<-MinneapolisWeather%>%
 
 ```
 
+Show daily ridership from 2014-2017 overall
+
+```{r}
+
+metroRidership<-metroRidership%>%
+   mutate(dtDate=as.Date(dtDate))
+
+metroRidershipTotal<-metroRidership%>%
+   group_by(dtDate)%>%
+   summarize(totalRiders=sum(Total_Riders))%>%
+   mutate(weekDay=wday(dtDate)<6)%>%
+   left_join(metroRidership, by="dtDate")%>%
+   select(dtDate, totalRiders, weekDay, Schedule)
+
+head(metroRidershipTotal,20)
+
+ggplot(metroRidershipTotal, aes(x=dtDate, y=totalRiders, color=Schedule))+
+   geom_point()
+
+```
+
+
+Show how divergence from daily mean effects ridership (only work with 2016 because thats time frame for nice ride data)
 ```{r}
 
 head(metroRidership)
 class(metroRidership$dtDate)
 class(MinneapolisWeather$date)
 
-metroRidership<-metroRidership%>%
-   mutate(dtDate=as.Date(dtDate))
+
 WeatherRiders<-metroRidership%>%
-   left_join(MinneapolisWeather, by=c("dtDate"="date"))
+   left_join(MinneapolisWeather, by=c("dtDate"="date"))%>%
+   filter(dtDate>="2016-01-01"&dtDate<="2016-12-31")
+
 
 AvgDayTemp<-MinneapolisWeather%>%
    mutate(day=yday(date))%>%
@@ -121,15 +145,34 @@ WeatherRiders<-WeatherRiders%>%
    mutate(tempDiff=(maxTemp+minTemp)/2-dayTemp)%>%
    filter(Schedule!="Holiday")
 
-WeatherRiders1<-WeatherRiders%>%
-   filter()%>% 
-   mutate(day=as.factor(day), Route=as.factor(Route))
 
-head(WeatherRiders1)
+#Show how temp alone relates to ridership, if at all
 
-ggplot(WeatherRiders1, aes(x=tempDiff, y=Total_Riders))+
-   geom_smooth()
+
+
 ```
+
+
+
+```{r}
+WeatherRidersTotal<-WeatherRiders%>%
+   mutate(day=as.factor(day), Route=as.factor(Route))%>%
+   group_by(dtDate, tempDiff, dayTemp)%>%
+   summarize(Total_Riders=sum(Total_Riders))
+
+head(WeatherRidersTotal)
+
+ggplot(WeatherRidersTotal, aes(x=dayTemp, y=Total_Riders))+
+   geom_smooth()
+
+ggplot(WeatherRidersTotal, aes(x=tempDiff, y=Total_Riders))+
+   geom_smooth()
+
+
+
+```
+
+
 
 
 Doing same weather analysis with ridership
@@ -147,6 +190,8 @@ niceRideDay<-niceRide2016%>%
    summarize(numRiders=n())
 
 
+
+
 head(niceRideDay)
 
 niceRideDay<-niceRideDay%>%
@@ -156,8 +201,11 @@ niceRideDay<-niceRideDay%>%
    mutate(tempDiff=(maxTemp+minTemp)/2-dayTemp)
 
 head(niceRideDay)
+
+ggplot(niceRideDay, aes(x=dayTemp, y=numRiders))+
+   geom_smooth()
+   
 ggplot(niceRideDay, aes(x=tempDiff, y=numRiders))+
    geom_smooth()
-
 
 ```
