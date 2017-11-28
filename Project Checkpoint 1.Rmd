@@ -30,10 +30,17 @@ Data Limitations: challenging to get at all 365 days with ease (without going th
 Data dimensions: 71x15 (for one day,)
 
 
-Data Source: Nextrip data from Metrotransit
-Data Description: 
-Data Limitations:
-Data dimensions:
+#metroStops
+Data source: Metro Transit
+Data description: Location of each bus stop (with site ID, city, latitude, longitude, etc.)
+Data limitations: bus stops that exist from 2014-2017
+Data dimensions: 14,919 x 12
+
+#metroRidership
+Data source: Metro Transit
+Data description: Gives the day, if it's a holiday, route number, route type, number of trips, and total number of riders on that day 
+Data limitations: from January 2014- October 2017
+Data dimensions: 131,078 x 10
 
 
 Data Source: Niceride 2016 data
