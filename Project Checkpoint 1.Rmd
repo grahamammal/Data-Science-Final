@@ -15,8 +15,8 @@ knitr::opts_chunk$set(echo = TRUE)
 #a. bikeshare patterns
 
 #b. Research questions:
-1. How do bikeshare patterns vary depending on weather compared to buses?
-2. Notice if bikeshare usage goes up when a bus vomits people nearby?
+1. How do bikeshare usage patterns vary depending on weather compared to buses?
+2. Is there a correlation between proximity of a Niceride station to a bus stop and usage patterns of the Niceride station?
 
 #ALTERNATIVE QUESTIONS: 
 -How do usage patterns of bikes and public transit vary from the norm on public holidays?
