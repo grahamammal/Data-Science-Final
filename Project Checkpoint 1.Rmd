@@ -42,11 +42,17 @@ Data description: Gives the day, if it's a holiday, route number, route type, nu
 Data limitations: from January 2014- October 2017
 Data dimensions: 131,078 x 10
 
-
+#NicerideRidership
 Data Source: Niceride 2016 data
-Data Description:
-Data Limitations:
+Data Description: Data contains information about trips: the start and end stations of each trip, the total time it took to complete the journey, and whether the passenger was a casual rider or a member.
+Data Limitations: Does not contain information about metro rides in December, January, February, and March. Only has 432283 rows with data in them, the rest are empty and this data has to be cleaned accordingly before use. 
 Data dimensions: >432,284x8
+
+#NiceRideStops
+Data Source: Nice Ride 2016 data
+Data Description: Data contains names of Metro Bus Stations, and the exact coordinates of each station (latitude and longitude)
+Data Limitations: This dataset contains everything we require to come up with comprehensive visualizations hence, there are no limitations to this data. 
+Data Dimensions: 202 x 6 
 
 
 MinneapolisWeather
