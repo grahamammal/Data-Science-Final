@@ -32,21 +32,15 @@ niceRideLocations<-read_csv("Nice_ride_data_2016_season\\Nice_ride_data_2016_sea
 
 ```
 
-```{r}
-nrow(niceRide2016)
-```
 Read in data on MetroTransit
 ```{r, cache=TRUE}
 metroStops<-read_csv("bus-stops-Oct-2017.csv")
 metroRidership<-read_csv("ridership-route-day-Jan2014-Oct2017.csv")
-head(metroStops)
-head(metroRidership)
-
 
 ```
 
 
-Visualize where the stops and stations are in the twin cities
+Visualize where the bus stops and bike stations are in the twin cities
 ```{r, cache=TRUE}
 twinCitiesMap<-get_map(location="Minneapolis", zoom= 10)
 
@@ -71,25 +65,37 @@ maxBikeLat<-max(niceRideLocations$Latitude)+ft100
 minBikeLong<-min(niceRideLocations$Longitude)-ft100
 maxBikeLong<-max(niceRideLocations$Longitude)+ft100
 
+
+#Only bus stops within square
 metroStopsLimited<-metroStops%>%
    filter(site_longitude>minBikeLong&site_longitude<maxBikeLong)%>%
    filter(site_latitude>minBikeLat&site_latitude<maxBikeLat)
+```
+
+
+Look at new map to make sure it's right
+```{r}
 
 ggmap(twinCitiesMap)+
    geom_point(data=metroStopsLimited, aes(x=site_longitude, y=site_latitude))
-
+#Check number of stops, see if step was useful in reducing size of data set
 nrow(metroStopsLimited)
-
-
 
 ```
 
+#Weather analysis
+
 Read in data on weather for 2016
-```{r}
+```{r, cache=TRUE}
 
 #source: http://www.dnr.state.mn.us/climate/twin_cities/listings.html
+#Had to copy and paste data from page into .txt file and read that in
 MinneapolisWeather<-read_csv(file="Minneapolis Weather.txt", col_names = c("date", "maxTemp","minTemp","precip","snow","snowDepth"))
+```
 
+
+Clean up data
+```{r}
 MinneapolisWeather<-MinneapolisWeather%>%
    mutate(precip=as.double(replace(precip,precip=="T",0)))%>%
    mutate(snow=as.double(replace(snow,snow=="T",0)))%>%
@@ -98,21 +104,20 @@ MinneapolisWeather<-MinneapolisWeather%>%
 ```
 
 Show daily ridership from 2014-2017 overall
-
 ```{r}
 
+#change date variable type to Date object
 metroRidership<-metroRidership%>%
    mutate(dtDate=as.Date(dtDate))
 
+#Calculate total number of riders for a given day, while still keeping data on what type of riding day it was (Holiday, weekday, etc.)
 metroRidershipTotal<-metroRidership%>%
    group_by(dtDate)%>%
    summarize(totalRiders=sum(Total_Riders))%>%
-   mutate(weekDay=wday(dtDate)<6)%>%
    left_join(metroRidership, by="dtDate")%>%
-   select(dtDate, totalRiders, weekDay, Schedule)
+   select(dtDate, totalRiders, Schedule)
 
-head(metroRidershipTotal,20)
-
+#Show graph of total ridership for each day
 ggplot(metroRidershipTotal, aes(x=dtDate, y=totalRiders, color=Schedule))+
    geom_point()
 
@@ -122,66 +127,67 @@ ggplot(metroRidershipTotal, aes(x=dtDate, y=totalRiders, color=Schedule))+
 Show how divergence from daily mean effects ridership (only work with 2016 because thats time frame for nice ride data)
 ```{r}
 
-head(metroRidership)
-class(metroRidership$dtDate)
-class(MinneapolisWeather$date)
-
-
+#Add weather data to info on bus ridership
 WeatherRiders<-metroRidership%>%
    left_join(MinneapolisWeather, by=c("dtDate"="date"))%>%
-   filter(dtDate>="2016-01-01"&dtDate<="2016-12-31")
+   filter(dtDate>="2016-01-01"&dtDate<="2016-12-31")#fix date object type
 
 
+#Calculate the average temperature of a day over the seven years of weather data
+#Should replace this with climate normals from NOAA
 AvgDayTemp<-MinneapolisWeather%>%
    mutate(day=yday(date))%>%
    group_by(day)%>%
    summarize(dayTemp=sum((maxTemp+minTemp)/2)/n())
 
-head(AvgDayTemp)
+#Check that its 366 elements
 nrow(AvgDayTemp)
+
+#Calculate the difference between the average temperature of a day and the mean average temperature of that day over the seven years of weather data 
 WeatherRiders<-WeatherRiders%>%
    mutate(day=yday(dtDate))%>%
    left_join(AvgDayTemp, by="day")%>%
-   mutate(tempDiff=(maxTemp+minTemp)/2-dayTemp)%>%
-   filter(Schedule!="Holiday")
+   mutate(tempDiff=(maxTemp+minTemp)/2-dayTemp)
 
-
-#Show how temp alone relates to ridership, if at all
-
-
-
-```
-
-
-
-```{r}
 WeatherRidersTotal<-WeatherRiders%>%
    mutate(day=as.factor(day), Route=as.factor(Route))%>%
    group_by(dtDate, tempDiff, dayTemp)%>%
    summarize(Total_Riders=sum(Total_Riders))
 
+#Check that it worked
 head(WeatherRidersTotal)
 
-ggplot(WeatherRidersTotal, aes(x=dayTemp, y=Total_Riders))+
-   geom_smooth()
-
-ggplot(WeatherRidersTotal, aes(x=tempDiff, y=Total_Riders))+
-   geom_smooth()
 
 
 
 ```
 
 
+Visualization of how ridership is dependent on temperature of a day and how it depends on divergence from historical temperature on that day
+```{r}
+
+#Group together all the riders on the different routes while keeping temp data
+
+ggplot(WeatherRidersTotal, aes(x=dayTemp, y=Total_Riders))+
+   geom_smooth()
+```
+
+We see that ridrship does correlate wtih absolute temperature peaking at around 50 degrees F
+```{r}
+ggplot(WeatherRidersTotal, aes(x=tempDiff, y=Total_Riders))+
+   geom_smooth()
+
+```
+
+Ridership drops off significantly on days where weather is significantly colder than norms, and is approximately constant for temps above norms
 
 
-Doing same weather analysis with ridership
+##Doing same weather analysis with ridership
 First get ridership of bikes by day
 
 ```{r}
-head(niceRide2016)
 
-
+#clean up date variable in data and total riders on that date
 niceRideDay<-niceRide2016%>%
    mutate(startDate=niceRide2016$`Start date`)%>%
    select("startDate")%>%
@@ -191,21 +197,38 @@ niceRideDay<-niceRide2016%>%
 
 
 
-
+#Check that it worked
 head(niceRideDay)
 
+#Add weather data to NiceRide data, including divergence from normals
 niceRideDay<-niceRideDay%>%
    left_join(MinneapolisWeather, by=c("startDate"="date"))%>%
    mutate(day=yday(startDate))%>%
    left_join(AvgDayTemp,by="day")%>% 
    mutate(tempDiff=(maxTemp+minTemp)/2-dayTemp)
 
+#Check that it worked
 head(niceRideDay)
 
+
+```
+
+Look at how NiceRide ridership correlates to temperature
+```{R}
 ggplot(niceRideDay, aes(x=dayTemp, y=numRiders))+
    geom_smooth()
    
+```
+
+Unsuprisingly, more people ride bikes in warmer weather
+
+Now look at how ridership correlates to departure from climate normals
+```{R}
 ggplot(niceRideDay, aes(x=tempDiff, y=numRiders))+
    geom_smooth()
 
 ```
+People ride much less on days with much lower temperatures than normals, and more on days higher than normals
+
+
+
