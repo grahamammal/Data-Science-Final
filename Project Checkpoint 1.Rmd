@@ -226,11 +226,28 @@ ggplot(WeatherRidersTotal, aes(x=dayTemp, y=Total_Riders))+
    geom_smooth()
 ```
 
-We see that ridrship does correlate wtih absolute temperature peaking at around 50 degrees F
+We see that ridership does correlate wtih absolute temperature peaking at around 50 degrees F
 ```{r}
 ggplot(WeatherRidersTotal, aes(x=tempDiff, y=Total_Riders))+
    geom_smooth()
 
+```
+
+```{r}
+#How ridership varies based on the Max Temperature for any given day
+ggplot(WeatherRiders, aes(x=maxTemp, y=Total_Riders))+
+  geom_smooth()
+
+#How ridership varies based on the Min Temperature for any given day
+ggplot(WeatherRiders, aes(x=minTemp, y=Total_Riders))+
+  geom_smooth()
+
+#Visualize the relationship between the ridership patterns and the min and max temperatures of any given day (is a bit weird/unclear at first to interpret, so we might not wanna use this)
+#Overall ridership seems to be higher for the min temperatures because that means it was likely a generally warmer day than when you are just looking at the max temp (because the temp could have dropped so much lower than that max temp during the day)
+ggplot(WeatherRiders, aes(x=minTemp, y=Total_Riders))+
+  geom_smooth()+
+  geom_smooth(aes(x=maxTemp, y=Total_Riders, color="red"))+
+  labs(x="Temperature")
 ```
 
 Ridership drops off significantly on days where weather is significantly colder than norms, and is approximately constant for temps above norms
