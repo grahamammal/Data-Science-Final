@@ -302,4 +302,15 @@ ggplot(niceRideDay, aes(x=tempDiff, y=numRiders))+
 People ride much less on days with much lower temperatures than normals, and more on days higher than normals
 
 
+```{r}
+minDist<-function(busLongs, busLats, bikeLong, bikeLat){
+   busLongLat<-matrix(c(busLongs, busLats),ncol=2)
+   curMin<-min(apply(busLongLat,FUN=distHaversine,MARGIN=1,p2=c(bikeLong, bikeLat)))
+   return(curMin)
+}
 
+niceRideLocationsDist<-niceRideLocations%>%
+   group_by(Terminal)%>%
+   mutate(minDist = mapply(minDist, bikeLat=Latitude, bikeLong=Longitude, MoreArgs=list(busLongs=metroStopsLimited$site_longitude, busLats=metroStopsLimited$site_latitude)))
+   
+```
