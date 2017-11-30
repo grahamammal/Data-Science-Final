@@ -314,3 +314,15 @@ niceRideLocationsDist<-niceRideLocations%>%
    mutate(minDist = mapply(minDist, bikeLat=Latitude, bikeLong=Longitude, MoreArgs=list(busLongs=metroStopsLimited$site_longitude, busLats=metroStopsLimited$site_latitude)))
    
 ```
+```{r}
+niceRide2016dist<-niceRide2016%>%
+   left_join(niceRideLocationsDist, by=c("Start station"="Station"))%>%
+   group_by(Latitude, Longitude, minDist)%>%
+   summarize(total=n())%>%
+   filter(!is.na(Latitude))
+
+head(niceRide2016dist)
+
+ggplot(niceRide2016dist, aes(x=minDist, y=total))+
+   geom_point()
+```
