@@ -333,3 +333,40 @@ niceRide2016<- niceRide2016 %>%
 
 ggplot(niceRide2016, aes(x= DayOfWeek)) + geom_bar(position = "dodge",aes(fill=Account.type), alpha= 0.3)
 ```
+
+```{r}
+head(niceRide2016)
+niceRideProximityRiders<-niceRide2016%>%
+  left_join(niceRideLocationsDist, by=c("Start station"="Station"))%>%
+  group_by(`Start station`, Latitude, Longitude, `Account type`)%>%
+  summarize(total=n())%>%
+  arrange(desc(total))%>%
+  filter(!is.na(Latitude))
+head(niceRideProximityRiders)
+
+niceRideProximityRiders2<-niceRide2016%>%
+  left_join(niceRideLocationsDist, by=c("Start station"="Station"))%>%
+  group_by(`Start station`, Latitude, Longitude)%>%
+  summarize(total=n())%>%
+  arrange(desc(total))%>%
+  filter(!is.na(Latitude))
+head(niceRideProximityRiders)
+
+twinCitiesMap<-get_map(location="Minneapolis", zoom= 13)
+
+ggmap(twinCitiesMap)+
+   geom_point(data=niceRideProximityRiders2, aes(x=Longitude, y=Latitude, size=total, alpha=.5))
+
+#Visualization of niceride stations in the twin cities- the bigger the circle, the more people used the station on the day 11/6/16.
+```
+
+```{r}
+niceRide2016Dist<-niceRide2016%>%
+  left_join(niceRideLocationsDist, by=c("Start station"="Station"))
+
+ggplot(niceRide2016Dist, aes(x=minDist))+
+  geom_density()+
+  facet_wrap(~`Account type`)
+
+#Visualize how the usage of the niceride bike stations based on their proximity to a bus station and if they are a casual user or member
+```
