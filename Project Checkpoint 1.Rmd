@@ -325,3 +325,11 @@ head(niceRide2016dist)
 ggplot(niceRide2016dist, aes(x=minDist))+
    geom_density(fill="wheat")
 ```
+
+```{r}
+niceRide2016<- niceRide2016 %>%
+  mutate(Start.date=as.Date(Start.date))%>%
+  mutate(DayOfWeek=wday(Start.date))
+
+ggplot(niceRide2016, aes(x= DayOfWeek)) + geom_bar(position = "dodge",aes(fill=Account.type), alpha= 0.3)
+```
