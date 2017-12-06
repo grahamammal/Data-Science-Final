@@ -26,29 +26,28 @@ ggplot(WeatherRiders, aes(x=snowDepth, y=Total_Riders))+
 #shows how snow depth on a given day affects the ridership of metro transit
 ```
 
-```{r cache=TRUE}
-ggplot(WeatherRiders, aes(x= precip, y=Total_Riders))+ 
-geom_smooth(color="blue4")+ labs(x="Precipitation in inches", y= "Total number of metro riders")
-#shows how precipitation on a given day affects the ridership of metro transit
+```{r}
 
+AvgDayTemp<-MinneapolisWeather%>%
+   mutate(day=yday(date))%>%
+   group_by(day)%>%
+   summarize(AvgdayTemp=sum((maxTemp+minTemp)/2)/n())
+head(AvgDayTemp)
 
-#clean up date variable in data and total riders on that date
-niceRideDay<-niceRide2016%>%
-   mutate(startDate=niceRide2016$Start.date)%>%
-   select("startDate")%>%
-   mutate(startDate=as.Date(startDate, "%m/%d/%Y"))%>%
-   group_by(startDate)%>%
-   summarize(numRiders=n())
-
-#Add weather data to NiceRide data, including divergence from normals
-
-niceRideDay<-niceRideDay%>%
-   left_join(MinneapolisWeather, by=c("startDate"="date"))%>%
-   mutate(day=yday(startDate))%>%
-   left_join(AvgDayTemp,by="day")%>% 
+MinneapolisWeather2016<-MinneapolisWeather%>%
+   mutate(day=yday(date))%>%
+   left_join(AvgDayTemp, by="day")%>%
    mutate(tempDiff=(maxTemp+minTemp)/2-dayTemp)
 
-ggplot(niceRideDay, aes(x= precip, y=numRiders))+ 
-geom_smooth(color="blue4")  + labs(x="Precipitation in inches", y="Number of people using NiceRide bikes")
+head(niceRideDay)
+
+niceRideDay2016<-niceRideDay%>%
+   left_join(MinneapolisWeather, by=c("tempDiff"))%>%
+   filter(tempDiff<="-15.0000")%>%
+  select(tempDiff, numRiders, startDate, precip.x)
+
+head(niceRideDay2016)
+
+ggplot(niceRideDay2016, aes(x=precip.x, y=numRiders)) +geom_smooth(color="blue4")+ labs(x="Precipitation in inches", y="Number of people using NiceRide bikes")
 #shows how precipitation on a given day affects the ridership of NiceRide
 ```
