@@ -370,3 +370,102 @@ ggplot(niceRide2016Dist, aes(x=minDist))+
 
 #Visualize how the usage of the niceride bike stations based on their proximity to a bus station and if they are a casual user or member
 ```
+
+
+
+
+
+```{r}
+ft1000<-.002744
+
+minBikeLat<-min(niceRideLocations$Latitude)-ft1000
+maxBikeLat<-max(niceRideLocations$Latitude)+ft1000
+
+minBikeLong<-min(niceRideLocations$Longitude)-ft1000
+maxBikeLong<-max(niceRideLocations$Longitude)+ft1000
+
+
+#Only bus stops within square
+metroStopsLimited<-metroStops%>%
+   filter(site_longitude>minBikeLong&site_longitude<maxBikeLong)%>%
+   filter(site_latitude>minBikeLat&site_latitude<maxBikeLat)
+
+niceRideLatLongs<-matrix(c(niceRideLocations$Longitude, niceRideLocations$Latitude),ncol=2)
+busLatLongs<-matrix(c(metroStopsLimited$site_longitude, metroStopsLimited$site_latitude),ncol=2)
+
+
+
+distanceMatrix<-distm(x=niceRideLatLongs, y=busLatLongs, fun = distHaversine)
+
+distanceDF<-as.data.frame(t(distanceMatrix))
+
+
+colnames(distanceDF)<-niceRideLocations$Terminal
+
+
+closeDF<-distanceDF%>%
+   mutate(minDist=apply(distanceDF,1,min))%>%
+   mutate(site_id=as.integer(metroStopsLimited$site_id))%>%
+   filter(minDist<200)
+
+```
+
+
+
+
+
+
+
+```{r}
+gatheredDist<-closeDF%>%
+   gather(key=niceRideTerminal, value=distance, 1:202)%>%
+   arrange(site_id)%>%
+   select(-minDist)
+   
+
+#siteSample<-sample(gatheredDist$site_id, size=3)
+
+
+niceRide2016Clean<-niceRide2016%>%
+   filter(`Start station number`!='')%>%
+   mutate(`Start date`=hour(mdy_hm(`Start date`))+minute(mdy_hm(`Start date`))/60)
+
+niceRide2016Work<-niceRide2016Clean%>%
+   #filter(`Account type`=="Member")%>%
+   mutate(wday=wday(`Start date`))%>%
+   filter(wday!=6|wday!=7)%>%
+   filter(`Start date`<=20&`Start date`>=15)%>%
+   select(-wday)
+dim(niceRide2016Work)
+
+
+gatheredSampledClose<-gatheredDist%>%
+   filter(site_id%in%siteSample)%>%
+   filter(distance<500)
+
+group_by(gatheredSampledClose, niceRideTerminal)%>%
+   summarise(n())
+
+dim(gatheredSampledClose)
+
+
+
+niceRideSampledClose<-niceRide2016Work%>%
+   filter(`Start station number`%in% gatheredSampledClose$niceRideTerminal)%>%
+   left_join(gatheredSampledClose, by=c("Start station number"="niceRideTerminal"))%>%
+   mutate(site_id=as.factor(site_id))
+dim(niceRideSampledClose)
+
+head(niceRideSampledClose)
+```
+
+
+```{r}
+ggplot()+
+   geom_density(data=niceRide2016Work, aes(x=`Start date`, ..density..), fill= "black", alpha=.5)+
+   geom_freqpoly(data=niceRideSampledClose, binwidth=1/12 , aes(x=`Start date`, ..density..),color="black", boundary=15)+
+   geom_freqpoly(data=niceRideSampledClose, binwidth=1/6 , aes(x=`Start date`, ..density.., color=`Start station number`), position = "identity", boundary=15, alpha=.3)+
+   facet_grid(site_id~.)+
+   labs(x="Start Time")
+
+```
