@@ -229,7 +229,8 @@ ggplot(WeatherRidersTotal, aes(x=dayTemp, y=Total_Riders))+
 We see that ridership does correlate wtih absolute temperature peaking at around 50 degrees F
 ```{r}
 ggplot(WeatherRidersTotal, aes(x=tempDiff, y=Total_Riders))+
-   geom_smooth()
+   geom_smooth()+
+   geom_point(alpha=.5)
 
 ```
 
@@ -264,7 +265,8 @@ niceRideDay<-niceRide2016%>%
    select("startDate")%>%
    mutate(startDate=as.Date(startDate, "%m/%d/%Y"))%>%
    group_by(startDate)%>%
-   summarize(numRiders=n())
+   summarize(numRiders=n())%>%
+   filter(!is.na(startDate))
 
 
 
@@ -296,7 +298,8 @@ Unsuprisingly, more people ride bikes in warmer weather
 Now look at how ridership correlates to departure from climate normals
 ```{R}
 ggplot(niceRideDay, aes(x=tempDiff, y=numRiders))+
-   geom_smooth()
+   geom_smooth()+
+   geom_point(alpha=.5)
 
 ```
 People ride much less on days with much lower temperatures than normals, and more on days higher than normals
