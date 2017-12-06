@@ -423,7 +423,7 @@ gatheredDist<-closeDF%>%
    select(-minDist)
    
 
-#siteSample<-sample(gatheredDist$site_id, size=3)
+siteSample<-sample(gatheredDist$site_id, size=3)
 
 
 niceRide2016Clean<-niceRide2016%>%
