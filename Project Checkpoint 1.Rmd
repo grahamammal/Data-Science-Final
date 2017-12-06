@@ -62,7 +62,7 @@ Data Limitations The specific data we're using is the weather data between 2010 
 Data dimensions: 2884 x 6
 
 
-```{r}
+```{r, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(ggplot2)
 library(lubridate)
@@ -70,6 +70,7 @@ library(urltools)
 library(jsonlite)
 library(ggmap)
 library(rvest)
+library(geosphere)
 
 ```
 
@@ -79,15 +80,19 @@ library(rvest)
 
 
 Read in data on NiceRide, the bike share for the twin cities
-```{r, cache=TRUE}
+```{r, cache=TRUE, message = FALSE, warning = FALSE}
 
-niceRide2016<-read_csv("Nice_ride_data_2016_season\\Nice_ride_data_2016_season\\Nice_ride_trip_history_2016_season.csv")
-niceRideLocations<-read_csv("Nice_ride_data_2016_season\\Nice_ride_data_2016_season\\Nice_Ride_2016_Station_Locations.csv")
+niceRide2016<-read_csv("Nice_ride_trip_history_2016_season.csv")
+#Throw out empty rows
+niceRide2016<-niceRide2016%>%
+   filter(!is.na(`Start date`))
+
+niceRideLocations<-read_csv("Nice_Ride_2016_Station_Locations.csv")
 
 ```
 
 Read in data on MetroTransit
-```{r, cache=TRUE}
+```{r, cache=TRUE, message = FALSE, warning = FALSE}
 metroStops<-read_csv("bus-stops-Oct-2017.csv")
 metroRidership<-read_csv("ridership-route-day-Jan2014-Oct2017.csv")
 
@@ -95,15 +100,13 @@ metroRidership<-read_csv("ridership-route-day-Jan2014-Oct2017.csv")
 
 
 Visualize where the bus stops and bike stations are in the twin cities
-```{r, cache=TRUE}
+```{r, cache=TRUE,message = FALSE, warning = FALSE}
 twinCitiesMap<-get_map(location="Minneapolis", zoom= 10)
 
 ggmap(twinCitiesMap)+
    geom_point(data=metroStops, aes(x=site_longitude, y=site_latitude))
 
 
-#about 100 ft in degrees latitude
-ft100<-.0002744
 
 ggmap(twinCitiesMap)+
    geom_point(data=niceRideLocations, aes(x=Longitude, y=Latitude))
@@ -111,31 +114,6 @@ ggmap(twinCitiesMap)+
 
 ```
 
-Limit the bus stops to only stops within a rectangle that encloses the bike stations
-```{r}
-minBikeLat<-min(niceRideLocations$Latitude)-ft100
-maxBikeLat<-max(niceRideLocations$Latitude)+ft100
-
-minBikeLong<-min(niceRideLocations$Longitude)-ft100
-maxBikeLong<-max(niceRideLocations$Longitude)+ft100
-
-
-#Only bus stops within square
-metroStopsLimited<-metroStops%>%
-   filter(site_longitude>minBikeLong&site_longitude<maxBikeLong)%>%
-   filter(site_latitude>minBikeLat&site_latitude<maxBikeLat)
-```
-
-
-Look at new map to make sure it's right
-```{r}
-
-ggmap(twinCitiesMap)+
-   geom_point(data=metroStopsLimited, aes(x=site_longitude, y=site_latitude))
-#Check number of stops, see if step was useful in reducing size of data set
-nrow(metroStopsLimited)
-
-```
 
 #Weather analysis
 
@@ -194,9 +172,6 @@ AvgDayTemp<-MinneapolisWeather%>%
    group_by(day)%>%
    summarize(dayTemp=sum((maxTemp+minTemp)/2)/n())
 
-#Check that its 366 elements
-nrow(AvgDayTemp)
-
 #Calculate the difference between the average temperature of a day and the mean average temperature of that day over the seven years of weather data 
 WeatherRiders<-WeatherRiders%>%
    mutate(day=yday(dtDate))%>%
@@ -207,11 +182,6 @@ WeatherRidersTotal<-WeatherRiders%>%
    mutate(day=as.factor(day), Route=as.factor(Route))%>%
    group_by(dtDate, tempDiff, dayTemp)%>%
    summarize(Total_Riders=sum(Total_Riders))
-
-#Check that it worked
-head(WeatherRidersTotal)
-
-
 
 
 ```
@@ -269,19 +239,12 @@ niceRideDay<-niceRide2016%>%
    filter(!is.na(startDate))
 
 
-
-#Check that it worked
-head(niceRideDay)
-
 #Add weather data to NiceRide data, including divergence from normals
 niceRideDay<-niceRideDay%>%
    left_join(MinneapolisWeather, by=c("startDate"="date"))%>%
    mutate(day=yday(startDate))%>%
    left_join(AvgDayTemp,by="day")%>% 
    mutate(tempDiff=(maxTemp+minTemp)/2-dayTemp)
-
-#Check that it worked
-head(niceRideDay)
 
 
 ```
@@ -304,7 +267,7 @@ ggplot(niceRideDay, aes(x=tempDiff, y=numRiders))+
 ```
 People ride much less on days with much lower temperatures than normals, and more on days higher than normals
 
-
+##FIX
 ```{r}
 minDist<-function(busLongs, busLats, bikeLong, bikeLat){
    busLongLat<-matrix(c(busLongs, busLats),ncol=2)
@@ -317,35 +280,39 @@ niceRideLocationsDist<-niceRideLocations%>%
    mutate(minDist = mapply(minDist, bikeLat=Latitude, bikeLong=Longitude, MoreArgs=list(busLongs=metroStopsLimited$site_longitude, busLats=metroStopsLimited$site_latitude)))
    
 ```
+
+
 ```{r}
 niceRide2016dist<-niceRide2016%>%
    left_join(niceRideLocationsDist, by=c("Start station"="Station"))%>%
    group_by(Latitude, Longitude, minDist)%>%
    filter(!is.na(Latitude))
 
-head(niceRide2016dist)
 
 ggplot(niceRide2016dist, aes(x=minDist))+
    geom_density(fill="wheat")
 ```
 
 ```{r}
-niceRide2016<- niceRide2016 %>%
-  mutate(Start.date=as.Date(Start.date))%>%
-  mutate(DayOfWeek=wday(Start.date))
+niceRide2016WDay<- niceRide2016 %>%
+   mutate(`Start date`=as.Date(`Start date`, "%m/%d/%Y"))%>%
+   mutate(DayOfWeek=wday(`Start date`))%>%
+   filter(!is.na(`Start date`))%>%
+   filter(`Account type`!= "Inconnu")
 
-ggplot(niceRide2016, aes(x= DayOfWeek)) + geom_bar(position = "dodge",aes(fill=Account.type), alpha= 0.3)
+
+ggplot(niceRide2016WDay, aes(x= DayOfWeek)) + geom_bar(position = "dodge",aes(fill=`Account type`), alpha= 0.3)
 ```
 
-```{r}
-head(niceRide2016)
+```{r,message = FALSE, warning = FALSE}
+
 niceRideProximityRiders<-niceRide2016%>%
   left_join(niceRideLocationsDist, by=c("Start station"="Station"))%>%
   group_by(`Start station`, Latitude, Longitude, `Account type`)%>%
   summarize(total=n())%>%
   arrange(desc(total))%>%
   filter(!is.na(Latitude))
-head(niceRideProximityRiders)
+
 
 niceRideProximityRiders2<-niceRide2016%>%
   left_join(niceRideLocationsDist, by=c("Start station"="Station"))%>%
@@ -353,7 +320,6 @@ niceRideProximityRiders2<-niceRide2016%>%
   summarize(total=n())%>%
   arrange(desc(total))%>%
   filter(!is.na(Latitude))
-head(niceRideProximityRiders)
 
 twinCitiesMap<-get_map(location="Minneapolis", zoom= 13)
 
@@ -365,11 +331,10 @@ ggmap(twinCitiesMap)+
 
 ```{r}
 niceRide2016Dist<-niceRide2016%>%
-  left_join(niceRideLocationsDist, by=c("Start station"="Station"))
+   left_join(niceRideLocationsDist, by=c("Start station"="Station"))
 
 ggplot(niceRide2016Dist, aes(x=minDist))+
-  geom_density()+
-  facet_wrap(~`Account type`)
+   geom_density(fill="wheat")
 
 #Visualize how the usage of the niceride bike stations based on their proximity to a bus station and if they are a casual user or member
 ```
@@ -379,22 +344,9 @@ ggplot(niceRide2016Dist, aes(x=minDist))+
 
 
 ```{r}
-ft1000<-.002744
-
-minBikeLat<-min(niceRideLocations$Latitude)-ft1000
-maxBikeLat<-max(niceRideLocations$Latitude)+ft1000
-
-minBikeLong<-min(niceRideLocations$Longitude)-ft1000
-maxBikeLong<-max(niceRideLocations$Longitude)+ft1000
-
-
-#Only bus stops within square
-metroStopsLimited<-metroStops%>%
-   filter(site_longitude>minBikeLong&site_longitude<maxBikeLong)%>%
-   filter(site_latitude>minBikeLat&site_latitude<maxBikeLat)
 
 niceRideLatLongs<-matrix(c(niceRideLocations$Longitude, niceRideLocations$Latitude),ncol=2)
-busLatLongs<-matrix(c(metroStopsLimited$site_longitude, metroStopsLimited$site_latitude),ncol=2)
+busLatLongs<-matrix(c(metroStops$site_longitude, metroStops$site_latitude),ncol=2)
 
 
 
@@ -408,7 +360,7 @@ colnames(distanceDF)<-niceRideLocations$Terminal
 
 closeDF<-distanceDF%>%
    mutate(minDist=apply(distanceDF,1,min))%>%
-   mutate(site_id=as.integer(metroStopsLimited$site_id))%>%
+   mutate(site_id=as.integer(metroStops$site_id))%>%
    filter(minDist<200)
 
 ```
@@ -420,6 +372,8 @@ closeDF<-distanceDF%>%
 
 
 ```{r}
+
+set.seed(1)
 gatheredDist<-closeDF%>%
    gather(key=niceRideTerminal, value=distance, 1:202)%>%
    arrange(site_id)%>%
@@ -430,8 +384,9 @@ siteSample<-sample(gatheredDist$site_id, size=3)
 
 
 niceRide2016Clean<-niceRide2016%>%
-   filter(`Start station number`!='')%>%
    mutate(`Start date`=hour(mdy_hm(`Start date`))+minute(mdy_hm(`Start date`))/60)
+
+
 
 niceRide2016Work<-niceRide2016Clean%>%
    #filter(`Account type`=="Member")%>%
@@ -439,27 +394,19 @@ niceRide2016Work<-niceRide2016Clean%>%
    filter(wday!=6|wday!=7)%>%
    filter(`Start date`<=20&`Start date`>=15)%>%
    select(-wday)
-dim(niceRide2016Work)
+
 
 
 gatheredSampledClose<-gatheredDist%>%
    filter(site_id%in%siteSample)%>%
    filter(distance<500)
 
-group_by(gatheredSampledClose, niceRideTerminal)%>%
-   summarise(n())
-
-dim(gatheredSampledClose)
-
-
 
 niceRideSampledClose<-niceRide2016Work%>%
    filter(`Start station number`%in% gatheredSampledClose$niceRideTerminal)%>%
    left_join(gatheredSampledClose, by=c("Start station number"="niceRideTerminal"))%>%
    mutate(site_id=as.factor(site_id))
-dim(niceRideSampledClose)
 
-head(niceRideSampledClose)
 ```
 
 
@@ -472,7 +419,6 @@ ggplot()+
    labs(x="Start Time")
 
 ```
-
 ```{r, cache=TRUE}
 metroStops<-read_csv("https://raw.githubusercontent.com/grahamammal/Data-Science-Final/master/bus-stops-Oct-2017.csv")
 metroRidership<-read_csv("https://raw.githubusercontent.com/grahamammal/Data-Science-Final/master/ridership-route-day-Jan2014-Oct2017.csv")
