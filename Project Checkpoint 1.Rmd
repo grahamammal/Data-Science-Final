@@ -472,3 +472,24 @@ ggplot()+
    labs(x="Start Time")
 
 ```
+
+```{r, cache=TRUE}
+metroStops<-read_csv("https://raw.githubusercontent.com/grahamammal/Data-Science-Final/master/bus-stops-Oct-2017.csv")
+metroRidership<-read_csv("https://raw.githubusercontent.com/grahamammal/Data-Science-Final/master/ridership-route-day-Jan2014-Oct2017.csv")
+
+metroRidership2016<-metroRidership%>%
+  mutate(dtDate=as.Date(dtDate))
+  
+
+MinneapolisWeather
+metroRidership2016
+
+#Add weather data to info on bus ridership
+WeatherRiders<-metroRidership2016%>%
+   left_join(MinneapolisWeather, by=c("dtDate"="date"))%>%
+   filter(dtDate>="2016-01-01"&dtDate<="2016-12-31") #fix date object type
+
+ggplot(WeatherRiders, aes(x=snowDepth, y=Total_Riders))+
+  geom_col(color="blue4")
+#shows how snow depth on a given day affects the ridership of metro transit
+```
