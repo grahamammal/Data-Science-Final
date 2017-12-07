@@ -162,6 +162,11 @@ ggplot(WeatherRidersTotal, aes(x=tempDiff, y=Total_Riders, color=Schedule))+
 
 Ridership drops off significantly on days where weather is significantly colder than norms, and is approximately constant for temps above norms
 
+```{r, warning=FALSE}
+ggplot(WeatherRiders, aes(x=snowDepth, y=Total_Riders))+
+  geom_col(color="blue4")
+```
+
 ##Doing same weather analysis with ridership
 First get ridership of bikes by day
 ```{r}
