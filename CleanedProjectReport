@@ -70,13 +70,13 @@ niceRide2016<-read_csv("Nice_ride_trip_history_2016_season.csv")
 #Throw out empty rows
 niceRide2016<-niceRide2016%>%
    filter(!is.na(`Start date`))
-niceRideLocations<-read_csv("Nice_Ride_2016_Station_Locations.csv")
+niceRideLocations<-read_csv("https://raw.githubusercontent.com/grahamammal/Data-Science-Final/master/Nice_Ride_2016_Station_Locations.csv")
 ```
 
 Read in data on MetroTransit
 ```{r, cache=TRUE, message = FALSE, warning = FALSE}
-metroStops<-read_csv("bus-stops-Oct-2017.csv")
-metroRidership<-read_csv("ridership-route-day-Jan2014-Oct2017.csv")
+metroStops<-read_csv("https://raw.githubusercontent.com/grahamammal/Data-Science-Final/master/bus-stops-Oct-2017.csv")
+metroRidership<-read_csv("https://raw.githubusercontent.com/grahamammal/Data-Science-Final/master/ridership-route-day-Jan2014-Oct2017.csv")
 metroRidership<-metroRidership%>%
    mutate(dtDate=as.Date(dtDate))
 ```
@@ -87,7 +87,7 @@ Read in data on weather for 2016
 ```{r, cache=TRUE, message=FALSE, warning=FALSE}
 #source: http://www.dnr.state.mn.us/climate/twin_cities/listings.html
 #Had to copy and paste data from page into .txt file and read that in
-MinneapolisWeather<-read_csv(file="Minneapolis Weather.txt", col_names = c("date", "maxTemp","minTemp","precip","snow","snowDepth"))
+MinneapolisWeather<-read_csv(file="https://raw.githubusercontent.com/grahamammal/Data-Science-Final/master/Minneapolis%20Weather.txt", col_names = c("date", "maxTemp","minTemp","precip","snow","snowDepth"))
 ```
 
 Clean up data
