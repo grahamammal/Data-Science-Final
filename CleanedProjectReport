@@ -229,17 +229,6 @@ ggplot(niceRide2016dist, aes(x=minDist))+
    geom_density(fill="wheat")
 ```
 
-```{r}
-niceRide2016WDay<- niceRide2016 %>%
-   mutate(`Start date`=as.Date(`Start date`, "%m/%d/%Y"))%>%
-   mutate(DayOfWeek=wday(`Start date`))%>%
-   filter(!is.na(`Start date`))%>%
-   filter(`Account type`!= "Inconnu")
-
-
-ggplot(niceRide2016WDay, aes(x= DayOfWeek)) + geom_bar(position = "dodge",aes(fill=`Account type`), alpha= 0.3)
-```
-
 ```{r,message = FALSE, warning = FALSE}
 
 niceRideProximityRiders<-niceRide2016%>%
