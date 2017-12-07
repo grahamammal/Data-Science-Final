@@ -166,6 +166,9 @@ ggplot(WeatherRiders, aes(x=snowDepth, y=Total_Riders))+
   geom_col(color="blue4")
 ```
 
+This visualization shows the relationship between snow depth on a given day and the ridership of Metro Transit. Since Niceride runs until November, there are no data on snowfall and Niceride.
+
+
 ##Doing same weather analysis with ridership
 First get ridership of bikes by day
 ```{r}
@@ -260,9 +263,8 @@ niceRide2016Dist<-niceRide2016%>%
 
 ggplot(niceRide2016Dist, aes(x=minDist))+
    geom_density(fill="wheat")
-
-#Visualize how the usage of the niceride bike stations based on their proximity to a bus station and if they are a casual user or member
 ```
+This is a visualization of the usage of Niceride bike stations based on their proximity to a bus station and if they are a casual user or member. Although there is definitely a correlation between proximity to bus station and ridership, there is no obvious difference in ridership between casual or member Niceride riders.
 
 ```{r}
 niceRideLatLongs<-matrix(c(niceRideLocations$Longitude, niceRideLocations$Latitude),ncol=2)
