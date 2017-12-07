@@ -316,14 +316,16 @@ niceRideSampledClose<-niceRide2016Work%>%
    filter(`Start station number`%in% gatheredSampledClose$niceRideTerminal)%>%
    left_join(gatheredSampledClose, by=c("Start station number"="niceRideTerminal"))%>%
    mutate(site_id=as.factor(site_id))
+
+levels(niceRideSampledClose$site_id)<-c("Station 1", "Station 2", "Station 3")
 ```
 
 
 ```{r}
 ggplot()+
    geom_density(data=niceRide2016Work, aes(x=`Start date`, ..density..), fill= "black", alpha=.5)+
-   geom_freqpoly(data=niceRideSampledClose, binwidth=1/12 , aes(x=`Start date`, ..density..),color="black", boundary=15)+
-   geom_freqpoly(data=niceRideSampledClose, binwidth=1/6 , aes(x=`Start date`, ..density.., color=`Start station number`), position = "identity", boundary=15, alpha=.3)+
+   geom_freqpoly(data=niceRideSampledClose, binwidth=1/12 , aes(x=`Start date`, ..density..), color="black", boundary=15)+
    facet_grid(site_id~.)+
-   labs(x="Start Time")
+   labs(x="Start Time")+
+   ggtitle("Bike Ridership For Stations Close to Stops")
 ```
