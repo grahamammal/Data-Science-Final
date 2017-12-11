@@ -314,8 +314,8 @@ levels(niceRideSampledClose$site_id)<-c("Stop 1", "Stop 2", "Stop 3")
 Visualize how bike stations near to selected bus stations vary in usage between 3PM and 8PM
 ```{r}
 ggplot()+
-   geom_density(data=niceRide2016Work, aes(x=`Start hour`, ..density..), fill= "black", alpha=.2)+
-   geom_freqpoly(data=niceRideSampledClose, binwidth=1/12 , aes(x=`Start hour`, ..density..), color="black", boundary=15)+
+   geom_density(data=niceRide2016Work, aes(x=startHour, ..density..), fill= "black", alpha=.2)+
+   geom_freqpoly(data=niceRideSampledClose, binwidth=1/12 , aes(x=startHour, ..density..), color="black", boundary=15)+
    facet_grid(site_id~.)+
    labs(x="Start Hour")+
    ggtitle("Bike Ridership For Stations Close to Stops")
@@ -393,7 +393,7 @@ head(calStop)
 
 niceRideRep<-niceRide2016%>%
    filter(`Start station number`==minnClosest$Terminal|`Start station number`==stPaulClosest$Terminal|`Start station number`==calClosest$Terminal)%>%
-   mutate(`Start date`=hour(mdy_hm(`Start date`))+minute(mdy_hm(`Start date`))/60)%>%
+   mutate(`Start date`=hour(`Start date`)+minute(`Start date`)/60)%>%
    filter(`Start date`>=15&`Start date`<=20)%>%
    mutate(stationName=`Start station number`)
 head(niceRideRep)
@@ -404,8 +404,8 @@ head(niceRideRep)
 levels(niceRideRep$`Start station number`)
 
 ggplot()+
-   geom_freqpoly(data=niceRideRep, binwidth=1/12 , aes(x=`Start date`,..density..), boundary=15)+
-   geom_density(data=niceRide2016Work, aes(x=`Start date`, ..density..), fill= "black", alpha=.2)+
+   geom_freqpoly(data=niceRideRep, binwidth=1/12 , aes(x=startHour,..density..), boundary=15)+
+   geom_density(data=niceRide2016Work, aes(x=startHour, ..density..), fill= "black", alpha=.2)+
    facet_grid(stationName~.)+
    labs(x="Start Hour")+
    ggtitle("Bike Ridership For Stations Close to Stops")
