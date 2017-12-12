@@ -1,5 +1,5 @@
 ---
-title: "Project Checkpoint 2"
+title: "Looking at Metro Transit and Niceride"
 author: "Marshall Graham, Zain Ijaz, Vashal Rana, Colleen Minnihan"
 date: "December 6th, 2017"
 output: html_document
@@ -132,7 +132,8 @@ Visualization of how ridership is dependent on temperature of a day and how it d
 ggplot(WeatherRidersTotal, aes(x=dayTemp, y=Total_Riders, color=Schedule))+
    geom_smooth()+
    geom_point(alpha=.3)+
-   ggtitle("Temperature and Bus Ridership")
+   ggtitle("Temperature and Bus Ridership")+
+  labs(x="Daily Temperature (degrees C)", y= "Total Riders")
 ```
 
 We see that ridership does correlate wtih absolute temperature peaking at around 50 degrees F
