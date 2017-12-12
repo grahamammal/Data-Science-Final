@@ -230,7 +230,7 @@ twinCitiesMap<-get_map(location="Minneapolis", zoom= 13)
 
 
 ggmap(twinCitiesMap)+
-   geom_point(data=niceRideProximityRiders, aes(x=Longitude, y=Latitude, size=total, alpha=.5))
+   geom_point(data=niceRideProximityRiders, aes(x=Longitude, y=Latitude, alpha=.5))
 ```
 
 Visualization of niceride stations in the twin cities- the bigger the circle, the more people used the station on the day 11/6/16.
