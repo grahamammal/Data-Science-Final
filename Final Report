@@ -377,6 +377,8 @@ calClosest
 ```
 
 Find closest bus stop to these stations
+
+Find closest bus stop to these stations
 ```{r}
 minnClosestStation<-niceRideLocations%>%
    filter(Terminal==minnClosest$Terminal)
@@ -393,34 +395,32 @@ calClosestStation<-niceRideLocations%>%
 
 calStatCoords<-c(calClosestStation$Longitude[1], calClosestStation$Latitude[1])
 
+calClosestStation
+
 represDistDF<-distanceDF%>%
-   select(minnClosest$Terminal, stPaulClosest$Terminal, calClosest$Terminal)%>%
+   select(minnClosest$Terminal, calClosest$Terminal)%>%
    mutate(site_id=metroStops$site_id)
-colnames(represDistDF)<-c("minnClose", "stPaulClose", "calClose", "site_id")
+colnames(represDistDF)<-c("minnClose", "calClose", "site_id")
 
 
 
 minnStop<-represDistDF%>%
    filter(minnClose==min(minnClose))
 
-stPaulStop<-represDistDF%>%
-   filter(stPaulClose==min(stPaulClose))
 
-calStop<-represDistDF%>%
-   filter(calClose==min(calClose))
 head(calStop) 
 
 niceRideRep<-niceRide2016%>%
-   filter(`Start station number`==minnClosest$Terminal|`Start station number`==stPaulClosest$Terminal|`Start station number`==calClosest$Terminal)%>%
+   filter(`Start station number`==minnClosest$Terminal|`Start station number`==calClosest$Terminal)%>%
    mutate(startHour=hour(`Start date`)+minute(`Start date`)/60)%>%
    filter(startHour>=15&startHour<=20)%>%
    mutate(stationName=`Start station number`)
 head(niceRideRep)
 
-niceRideRep$stationName<-as.factor(plyr::revalue(niceRideRep$stationName, replace=c("30029"="minnRep", "30121"="stPaulRep", "30158"="parkRep")))
+niceRideRep$stationName<-as.factor(plyr::revalue(niceRideRep$stationName, replace=c("30029"="minnRep",  "30158"="parkRep")))
 head(niceRideRep)
 
-
+niceRideRep%>%count(vars=stationName)
 
 ggplot()+
    geom_freqpoly(data=niceRideRep, binwidth=1/12 , aes(x=startHour,..density..), boundary=15)+
@@ -430,13 +430,6 @@ ggplot()+
    ggtitle("Bike Ridership For Stations Close to Stops")
    
 ```
-
-
-```{r}
-
-```
-
-
 
 
 
