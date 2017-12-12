@@ -257,7 +257,8 @@ twinCitiesMap<-get_map(location="Minneapolis", zoom= 13)
 
 
 ggmap(twinCitiesMap)+
-   geom_point(data=niceRideNew, aes(x=Longitude, y=Latitude, size=total, color=minDist, alpha=.5))
+   geom_point(data=niceRideNew, aes(x=Longitude, y=Latitude, size=total, color=minDist, alpha=.5))+
+  scale_colour_gradient(low = "blue", high = "orange")
 ```
 
 
