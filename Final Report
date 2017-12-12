@@ -408,8 +408,6 @@ minnStop<-represDistDF%>%
    filter(minnClose==min(minnClose))
 
 
-head(calStop) 
-
 niceRideRep<-niceRide2016%>%
    filter(`Start station number`==minnClosest$Terminal|`Start station number`==calClosest$Terminal)%>%
    mutate(startHour=hour(`Start date`)+minute(`Start date`)/60)%>%
