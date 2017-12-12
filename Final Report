@@ -260,6 +260,20 @@ ggmap(twinCitiesMap)+
    geom_point(data=niceRideNew, aes(x=Longitude, y=Latitude, size=total, color=minDist, alpha=.5))
 ```
 
+
+```{r}
+niceRideDaily<-niceRide2016Clean%>%
+   mutate(Schedule=wday(`Start date`, label=TRUE, abbr=TRUE))
+head(niceRideDaily)
+
+
+
+niceRideDaily$Schedule=plyr::revalue(niceRideDaily$Schedule, replace=c("Mon"="Weekday", "Tues"="Weekday", "Wed"="Weekday", "Thurs"="Weekday", "Fri"="Weekday", "Sat"="Saturday", "Sun"="Sunday"))
+
+ggplot(niceRideDaily, aes(x=startHour, color=Schedule, fill=Schedule))+
+   geom_density(alpha=.3)
+```
+
 The majority of usage is at locations near to bus stops
 
 Calculate distances between bike stations and bus stops
