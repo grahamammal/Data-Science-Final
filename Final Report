@@ -1,6 +1,255 @@
-to visualize Niceride stations' distances to bus stops and their ridership
+---
+title: "Project Checkpoint 2"
+author: "Marshall Graham, Zain Ijaz, Vashal Rana, Colleen Minnihan"
+date: "December 6th, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+#Main Questions:
+What is the correlation between weather and ridership on Metro Transit and Niceride?  
+How does the geographic closeness of NiceRide stations and bus stops affect ridership?
+
+###Follow up Questions:
+
+1. How do Niceride usage patterns vary over the course of one weekday? (Do the stations less than 500 meters from a bus stop have spikes in usage when a bus lets out?) 
+2. What other weather factors besides temperature influence ridership of Niceride and Metro Transit?
+
+##Datasets we will use
+
+###metroStops  
+Data source: Metro Transit
+Data description: Location of each bus stop (with site ID, city, latitude, longitude, etc.)
+Data limitations: bus stops that exist from 2014-2017
+Data dimensions: 14,919 x 12
+
+###metroRidership  
+Data source: Metro Transit  
+Data description: Gives the day, if it's a holiday, route number, route type, number of trips, and total number of riders on that day  
+Data limitations: from January 2014- October 2017  
+Data dimensions: 131,078 x 10  
+
+###NicerideRidership  
+Data Source: Niceride 2016 data  
+Data Description: Data contains information about trips: the start and end stations of each trip, the total time it took to complete the journey, and whether the passenger was a casual rider or a member.  
+Data Limitations: Does not contain information about metro rides in December, January, February, and March. Only has 432283 rows with data in them, the rest are empty and this data has to be cleaned accordingly before use.  
+Data dimensions: >432,284x8
+
+###NiceRideStops  
+Data Source: Nice Ride 2016 data  
+Data Description: Data contains names of Metro Bus Stations, and the exact coordinates of each station (latitude and longitude)  
+Data Limitations: This dataset contains everything we require to come up with comprehensive visualizations hence, there are no limitations to this data.  
+Data Dimensions: 202 x 6  
+
+###MinneapolisWeather  
+Data Source: "http://www.dnr.state.mn.us/climate/twin_cities/listings.html", the Department of Natural Resources has data going back to 1871 on the weather in Minneapolis/St. Paul. All data after 1938 is from MSP airport  
+Data Description: Gives the date, max temperature, min temperature, amount of percpititaion, amount of snow, and amount of snow on the ground  
+Data Limitations The specific data we're using is the weather data between 2010 and 2017. It's missing the average tempearture for a day, but the min and max are probably enough to work with  
+Data dimensions: 2884 x 6  
+
+Load Libraries  
+```{r, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(urltools)
+library(jsonlite)
+library(ggmap)
+library(rvest)
+library(geosphere)
+```
+
+Read in data on NiceRide, the bike share for the twin cities
+```{r, cache=TRUE, message = FALSE, warning = FALSE}
+niceRide2016<-read_csv("Nice_ride_trip_history_2016_season.csv")
+#Throw out empty rows
+niceRide2016<-niceRide2016%>%
+   filter(!is.na(`Start date`))%>%
+   mutate(`Start date`=mdy_hm(`Start date`))
+niceRideLocations<-read_csv("https://raw.githubusercontent.com/grahamammal/Data-Science-Final/master/Nice_Ride_2016_Station_Locations.csv")
+```
+
+Read in data on MetroTransit
+```{r, cache=TRUE, message = FALSE, warning = FALSE}
+metroStops<-read_csv("https://raw.githubusercontent.com/grahamammal/Data-Science-Final/master/bus-stops-Oct-2017.csv")
+metroRidership<-read_csv("https://raw.githubusercontent.com/grahamammal/Data-Science-Final/master/ridership-route-day-Jan2014-Oct2017.csv")
+metroRidership<-metroRidership%>%
+   mutate(dtDate=as.Date(dtDate))
+```
+
+#Weather analysis
+
+Read in data on weather for 2016
+```{r, cache=TRUE, message=FALSE, warning=FALSE}
+#source: http://www.dnr.state.mn.us/climate/twin_cities/listings.html
+#Had to copy and paste data from page into .txt file and read that in
+MinneapolisWeather<-read_csv(file="https://raw.githubusercontent.com/grahamammal/Data-Science-Final/master/Minneapolis%20Weather.txt", col_names = c("date", "maxTemp","minTemp","precip","snow","snowDepth"))
+```
+
+Clean up data
+```{r}
+MinneapolisWeather<-MinneapolisWeather%>%
+   mutate(precip=as.double(replace(precip,precip=="T",0)))%>%
+   mutate(snow=as.double(replace(snow,snow=="T",0)))%>%
+   mutate(snowDepth=as.double(replace(snowDepth,snowDepth=="T",0)))
+```
+
+Show how divergence from daily mean effects ridership (only work with 2016 because thats time frame for nice ride data)
+```{r}
+#Add weather data to info on bus ridership
+WeatherRiders<-metroRidership%>%
+   left_join(MinneapolisWeather, by=c("dtDate"="date"))%>%
+   filter(dtDate>="2016-01-01"&dtDate<="2016-12-31")#fix date object type
+
+#Calculate the average temperature of a day over the seven years of weather data
+#Should replace this with climate normals from NOAA
+AvgDayTemp<-MinneapolisWeather%>%
+   mutate(day=yday(date))%>%
+   group_by(day)%>%
+   summarize(dayTemp=sum((maxTemp+minTemp)/2)/n())
+
+#Calculate the difference between the average temperature of a day and the mean average temperature of that day over the seven years of weather data 
+WeatherRiders<-WeatherRiders%>%
+   mutate(day=yday(dtDate))%>%
+   left_join(AvgDayTemp, by="day")%>%
+   mutate(tempDiff=(maxTemp+minTemp)/2-dayTemp)
+
+WeatherRidersTotal<-WeatherRiders%>%
+   mutate(day=as.factor(day), Route=as.factor(Route))%>%
+   group_by(dtDate, tempDiff, dayTemp, Schedule)%>%
+   summarize(Total_Riders=sum(Total_Riders))%>%
+   filter(Schedule!="Reduced"&Schedule!="Holiday")
+```
+
+Visualization of how ridership is dependent on temperature of a day and how it depends on divergence from historical temperature on that day
+```{r,message = FALSE, warning = FALSE}
+#Group together all the riders on the different routes while keeping temp data
+ggplot(WeatherRidersTotal, aes(x=dayTemp, y=Total_Riders, color=Schedule))+
+   geom_smooth()+
+   geom_point(alpha=.3)+
+   ggtitle("Temperature and Bus Ridership")
+```
+
+We see that ridership does correlate wtih absolute temperature peaking at around 50 degrees F
+```{r,message = FALSE, warning = FALSE}
+ggplot(WeatherRidersTotal, aes(x=tempDiff, y=Total_Riders, color=Schedule))+
+   geom_point(alpha=.3)+
+   geom_smooth()+
+   ggtitle("Temperature Difference and Bus Ridership")
+```
+
+Ridership drops off significantly on days where weather is significantly colder than norms, and is approximately constant for temps above norms
+
+
+##Doing same weather analysis with ridership
+First get ridership of bikes by day
+```{r}
+#clean up date variable in data and total riders on that date
+niceRideDay<-niceRide2016%>%
+   mutate(startDate=niceRide2016$`Start date`)%>%
+   select("startDate")%>%
+   mutate(startDate=as.Date(startDate, "%m/%d/%Y"))%>%
+   group_by(startDate)%>%
+   summarize(numRiders=n())%>%
+   filter(!is.na(startDate))%>%
+   mutate(Schedule=wday(startDate, label=TRUE, abbr=TRUE))
+
+
+niceRideDay$Schedule=plyr::revalue(niceRideDay$Schedule, replace=c("Mon"="Weekday", "Tues"="Weekday", "Wed"="Weekday", "Thurs"="Weekday", "Fri"="Weekday", "Sat"="Saturday", "Sun"="Sunday"))
+
+
+#Add weather data to NiceRide data, including divergence from normals
+niceRideDay<-niceRideDay%>%
+   left_join(MinneapolisWeather, by=c("startDate"="date"))%>%
+   mutate(day=yday(startDate))%>%
+   left_join(AvgDayTemp,by="day")%>% 
+   mutate(tempDiff=(maxTemp+minTemp)/2-dayTemp)
+```
+
+Look at how NiceRide ridership correlates to temperature
+```{R, message=FALSE}
+ggplot(niceRideDay, aes(x=dayTemp, y=numRiders, color=Schedule))+
+   geom_smooth()+
+   geom_point(alpha=.3)+
+   ggtitle("Temperature and Bike Ridership")
+```
+
+Unsuprisingly, more people ride bikes in warmer weather
+
+Now look at how ridership correlates to departure from climate normals
+```{R, message=FALSE}
+ggplot(niceRideDay, aes(x=tempDiff, y=numRiders, color=Schedule))+
+   geom_smooth()+
+   geom_point(alpha=.3)+
+   ggtitle("Temperature Difference Bike Ridership")
+#Add color by weekend/weekday
+```
+
+People ride much less on days with much lower temperatures than normals, and more on days higher than normals
+
+#Geography and Bike and Bus Ridership
+Calculate minimum distances from bike stations to bus stops
+```{r}
+niceRideLatLongs<-matrix(c(niceRideLocations$Longitude, niceRideLocations$Latitude),ncol=2)
+busLatLongs<-matrix(c(metroStops$site_longitude, metroStops$site_latitude),ncol=2)
+
+minDist<-apply(distm(x=niceRideLatLongs, y=busLatLongs, fun = distHaversine),1, min)
+
+niceRideLocationsDist<-niceRideLocations%>%
+   mutate(minDist=minDist)
+```
+
+Visualize where the bus stops and bike stations are in the twin cities
+```{r, cache=TRUE,message = FALSE, warning = FALSE}
+twinCitiesMap<-get_map(location="Minneapolis", zoom= 10)
+
+ggmap(twinCitiesMap)+
+   geom_point(data=metroStops, aes(x=site_longitude, y=site_latitude))+
+   ggtitle("Bus Stop Locations")
+```
+
+
+Understand how usage at bike stations is related to geography
+```{r,message = FALSE, warning = FALSE}
+niceRideProximityRiders<-niceRide2016%>%
+  left_join(niceRideLocationsDist, by=c("Start station"="Station"))%>%
+  group_by(`Start station`, Latitude, Longitude)%>%
+  summarize(total=n())%>%
+  arrange(desc(total))%>%
+  filter(!is.na(Latitude))
+```
+
+
 ```{r, warning=FALSE, message=FALSE}
-niceRideNew<-niceRide2016dist%>%
+twinCitiesMap<-get_map(location="Minneapolis", zoom= 13)
+
+
+ggmap(twinCitiesMap)+
+   geom_point(data=niceRideProximityRiders, aes(x=Longitude, y=Latitude, size=total, alpha=.5))
+```
+
+Visualization of niceride stations in the twin cities- the bigger the circle, the more people used the station on the day 11/6/16.
+
+
+
+Visualize how proximity of a Niceride station to a bus stop affects ridership
+```{r, message=FALSE, warning=FALSE}
+niceRide2016Dist<-niceRide2016%>%
+   left_join(niceRideLocationsDist, by=c("Start station"="Station"))
+
+
+#Visualize how the usage of the niceride bike stations based on their proximity to a bus station and if they are a casual user or member
+```
+
+
+To visualize Niceride stations' distances to bus stops and their ridership
+```{r, warning=FALSE, message=FALSE}
+niceRideNew<-niceRide2016Dist%>%
 left_join(niceRideProximityRiders)
 niceRideNew
 
@@ -10,3 +259,174 @@ twinCitiesMap<-get_map(location="Minneapolis", zoom= 13)
 ggmap(twinCitiesMap)+
    geom_point(data=niceRideNew, aes(x=Longitude, y=Latitude, size=total, color=minDist, alpha=.5))
 ```
+
+The majority of usage is at locations near to bus stops
+
+Calculate distances between bike stations and bus stops
+```{r}
+niceRideLatLongs<-matrix(c(niceRideLocations$Longitude, niceRideLocations$Latitude),ncol=2)
+busLatLongs<-matrix(c(metroStops$site_longitude, metroStops$site_latitude),ncol=2)
+
+distanceMatrix<-distm(x=niceRideLatLongs, y=busLatLongs, fun = distHaversine)
+distanceDF<-as.data.frame(t(distanceMatrix))
+colnames(distanceDF)<-niceRideLocations$Terminal
+
+
+closeDF<-distanceDF%>%
+   mutate(minDist=apply(distanceDF,1,min))%>%
+   mutate(site_id=as.integer(metroStops$site_id))%>%
+   filter(minDist<200)
+```
+
+Select a set of 3 random bus stations and understand how stations less than 500 meters from these stations change in usage over time
+```{r}
+set.seed(1)
+
+gatheredDist<-closeDF%>%
+   gather(key=niceRideTerminal, value=distance, 1:202)%>%
+   arrange(site_id)%>%
+   select(-minDist)
+
+siteSample<-sample(gatheredDist$site_id, size=3)
+
+niceRide2016Clean<-niceRide2016%>%
+   mutate(startHour=hour(`Start date`)+minute(`Start date`)/60)
+
+
+
+niceRide2016Work<-niceRide2016Clean%>%
+   mutate(wday=wday(`Start date`))%>%
+   filter(wday!=6&wday!=7)%>%
+   filter(startHour<=20&startHour>=15)%>%
+   select(-wday)
+head(niceRide2016Work)
+gatheredSampledClose<-gatheredDist%>%
+   filter(site_id%in%siteSample)%>%
+   filter(distance<500)
+
+niceRideSampledClose<-niceRide2016Work%>%
+   filter(`Start station number`%in% gatheredSampledClose$niceRideTerminal)%>%
+   left_join(gatheredSampledClose, by=c("Start station number"="niceRideTerminal"))%>%
+   mutate(site_id=as.factor(site_id))
+
+levels(niceRideSampledClose$site_id)<-c("Stop 1", "Stop 2", "Stop 3")
+
+```
+
+Visualize how bike stations near to selected bus stations vary in usage between 3PM and 8PM
+```{r}
+ggplot()+
+   geom_density(data=niceRide2016Work, aes(x=startHour, ..density..), fill= "black", alpha=.2)+
+   geom_freqpoly(data=niceRideSampledClose, binwidth=1/12 , aes(x=startHour, ..density..), color="black", boundary=15)+
+   facet_grid(site_id~.)+
+   labs(x="Start Hour")+
+   ggtitle("Bike Ridership For Stations Close to Stops")
+#Decouple denisty plot from line graph?
+#Look at only closest nice ride stations to bus stops?
+#Try to issolate representative stops and get rid of pther geographic factros, like closensess to UM or other
+#Could do closest vs plot of everything in 2km of stop
+#Likes doing a couple example stops
+#
+
+```
+
+We see spikes and dips in usage that at regular intervals, perhaps indicating a relationship between a bus letting out people and those people using NiceRide
+
+
+
+
+
+Find representative bike station for downtown St. Paul, Minneapolis, and Lake Calhoun
+```{r}
+minnCenter<-c(-93.2650, 44.9778)
+stPaulCenter<-c(-93.0900, 44.9537)
+lakeCalhoun<-c(-93.307056,44.949154)
+
+
+minnClosest<-as.data.frame(t(distm(minnCenter, niceRideLatLongs)))%>%
+   mutate(Terminal=niceRideLocations$Terminal)%>%
+   filter(V1==min(V1))
+
+
+stPaulClosest<-as.data.frame(t(distm(stPaulCenter, niceRideLatLongs)))%>%
+   mutate(Terminal=niceRideLocations$Terminal)%>%
+   filter(V1==min(V1))
+
+
+
+calClosest<-as.data.frame(t(distm(lakeCalhoun, niceRideLatLongs)))%>%
+   mutate(Terminal=niceRideLocations$Terminal)%>%
+   filter(V1==min(V1))
+calClosest
+
+```
+
+Find closest bus stop to these stations
+```{r}
+minnClosestStation<-niceRideLocations%>%
+   filter(Terminal==minnClosest$Terminal)
+
+minnStatCoords<-c(minnClosestStation$Longitude[1], minnClosestStation$Latitude[1])
+
+stPaulClosestStation<-niceRideLocations%>%
+   filter(Terminal==stPaulClosest$Terminal)
+
+stPaulStatCoords<-c(stPaulClosestStation$Longitude[1], stPaulClosestStation$Latitude[1])
+
+calClosestStation<-niceRideLocations%>%
+   filter(Terminal==calClosest$Terminal)
+
+calStatCoords<-c(calClosestStation$Longitude[1], calClosestStation$Latitude[1])
+
+represDistDF<-distanceDF%>%
+   select(minnClosest$Terminal, stPaulClosest$Terminal, calClosest$Terminal)%>%
+   mutate(site_id=metroStops$site_id)
+colnames(represDistDF)<-c("minnClose", "stPaulClose", "calClose", "site_id")
+
+
+
+minnStop<-represDistDF%>%
+   filter(minnClose==min(minnClose))
+
+stPaulStop<-represDistDF%>%
+   filter(stPaulClose==min(stPaulClose))
+
+calStop<-represDistDF%>%
+   filter(calClose==min(calClose))
+head(calStop) 
+
+niceRideRep<-niceRide2016%>%
+   filter(`Start station number`==minnClosest$Terminal|`Start station number`==stPaulClosest$Terminal|`Start station number`==calClosest$Terminal)%>%
+   mutate(startHour=hour(`Start date`)+minute(`Start date`)/60)%>%
+   filter(startHour>=15&startHour<=20)%>%
+   mutate(stationName=`Start station number`)
+head(niceRideRep)
+
+niceRideRep$stationName<-as.factor(plyr::revalue(niceRideRep$stationName, replace=c("30029"="minnRep", "30121"="stPaulRep", "30158"="parkRep")))
+head(niceRideRep)
+
+
+
+ggplot()+
+   geom_freqpoly(data=niceRideRep, binwidth=1/12 , aes(x=startHour,..density..), boundary=15)+
+   geom_density(data=niceRide2016Work, aes(x=startHour, ..density..), fill= "black", alpha=.2)+
+   facet_grid(stationName~.)+
+   labs(x="Start Hour")+
+   ggtitle("Bike Ridership For Stations Close to Stops")
+   
+```
+
+
+```{r}
+
+```
+
+
+
+
+
+##Individual Contributions  
+Zain: Worked on Nice Ride relation with Precipitation in inches. Wrangled some data and made 3 visualizations for precipitation vs number of people using Nice ride bike system. Found that there was no corelation between the two.  
+Marshall: Worked on deepening understanding of the relationship between distance between bus stops and bike stations and ridership over time. Also worked on cleaning up code and formatting.  
+Vishal: Worked on making the presentation, exporting the data from file to the presentation.  
+Colleen: Manipulated data and worked on visualizing snow depth's correlation to metro transit ridership, worked on presentation, reworded initial questions and brainstormed/reworded new research questions.  
