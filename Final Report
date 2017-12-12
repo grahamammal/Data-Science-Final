@@ -133,7 +133,7 @@ ggplot(WeatherRidersTotal, aes(x=dayTemp, y=Total_Riders, color=Schedule))+
    geom_smooth()+
    geom_point(alpha=.3)+
    ggtitle("Temperature and Bus Ridership")+
-  labs(x="Daily Temperature (degrees C)", y= "Total Riders")
+  labs(x="Daily Temperature (degrees F)", y= "Total Riders")
 ```
 
 We see that ridership does correlate wtih absolute temperature peaking at around 50 degrees F
@@ -141,7 +141,8 @@ We see that ridership does correlate wtih absolute temperature peaking at around
 ggplot(WeatherRidersTotal, aes(x=tempDiff, y=Total_Riders, color=Schedule))+
    geom_point(alpha=.3)+
    geom_smooth()+
-   ggtitle("Temperature Difference and Bus Ridership")
+  ggtitle("Daily Temperature Difference and Bus Ridership")+
+  labs(x= "Temperature Difference (degrees F)", y="Total Riders")
 ```
 
 Ridership drops off significantly on days where weather is significantly colder than norms, and is approximately constant for temps above norms
@@ -177,7 +178,8 @@ Look at how NiceRide ridership correlates to temperature
 ggplot(niceRideDay, aes(x=dayTemp, y=numRiders, color=Schedule))+
    geom_smooth()+
    geom_point(alpha=.3)+
-   ggtitle("Temperature and Bike Ridership")
+   ggtitle("Temperature and Bike Ridership")+
+   labs(x="Daily Temperature (degrees F)", y="Total Riders")
 ```
 
 Unsuprisingly, more people ride bikes in warmer weather
@@ -187,7 +189,8 @@ Now look at how ridership correlates to departure from climate normals
 ggplot(niceRideDay, aes(x=tempDiff, y=numRiders, color=Schedule))+
    geom_smooth()+
    geom_point(alpha=.3)+
-   ggtitle("Temperature Difference Bike Ridership")
+    ggtitle("Daily Temperature Difference and Bike Ridership")+
+  labs(x="Temperature Difference (degrees F)", y="Total Riders")
 #Add color by weekend/weekday
 ```
 
@@ -211,7 +214,7 @@ twinCitiesMap<-get_map(location="Minneapolis", zoom= 10)
 
 ggmap(twinCitiesMap)+
    geom_point(data=metroStops, aes(x=site_longitude, y=site_latitude))+
-   ggtitle("Bus Stop Locations")
+   ggtitle("Minneapolis Bus Stop Locations")
 ```
 
 
@@ -231,7 +234,8 @@ twinCitiesMap<-get_map(location="Minneapolis", zoom= 13)
 
 
 ggmap(twinCitiesMap)+
-   geom_point(data=niceRideProximityRiders, aes(x=Longitude, y=Latitude, alpha=.5))
+   geom_point(data=niceRideProximityRiders, aes(x=Longitude, y=Latitude, alpha=.5))+
+   ggtitle("Minneapolis Nice Ride Station Locations")
 ```
 
 Visualization of niceride stations in the twin cities- the bigger the circle, the more people used the station on the day 11/6/16.
