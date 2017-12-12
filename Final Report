@@ -1,0 +1,12 @@
+to visualize Niceride stations' distances to bus stops and their ridership
+```{r, warning=FALSE, message=FALSE}
+niceRideNew<-niceRide2016dist%>%
+left_join(niceRideProximityRiders)
+niceRideNew
+
+twinCitiesMap<-get_map(location="Minneapolis", zoom= 13)
+
+
+ggmap(twinCitiesMap)+
+   geom_point(data=niceRideNew, aes(x=Longitude, y=Latitude, size=total, color=minDist, alpha=.5))
+```
