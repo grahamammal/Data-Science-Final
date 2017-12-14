@@ -210,7 +210,7 @@ niceRideLocationsDist<-niceRideLocations%>%
 
 Visualize where the bus stops and bike stations are in the twin cities
 ```{r, cache=TRUE,message = FALSE, warning = FALSE}
-twinCitiesMap<-get_map(location="Minneapolis", zoom= 10)
+twinCitiesMap<-get_map(location="Minneapolis", zoom= 13)
 
 ggmap(twinCitiesMap)+
    geom_point(data=metroStops, aes(x=site_longitude, y=site_latitude))+
