@@ -263,7 +263,9 @@ twinCitiesMap<-get_map(location="Minneapolis", zoom= 13)
 
 ggmap(twinCitiesMap)+
    geom_point(data=niceRideNew, aes(x=Longitude, y=Latitude, size=total, color=minDist, alpha=.5))+
-  scale_colour_gradient(low = "blue", high = "orange")
+  scale_colour_gradient(low = "blue", high = "orange")+
+  ggtitle("Niceride Usage and Distance from Stop")+
+  labs(color='Proximity to Stop', size='Riders')
 ```
 
 
