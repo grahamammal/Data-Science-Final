@@ -133,7 +133,7 @@ ggplot(WeatherRidersTotal, aes(x=dayTemp, y=Total_Riders, color=Schedule))+
    geom_smooth()+
    geom_point(alpha=.3)+
    ggtitle("Temperature and Bus Ridership")+
-  labs(x="Daily Temperature (degrees F)", y= "Total Riders")
+  labs(x="Daily Temperature (Degrees F)", y= "Total Riders")
 ```
 
 We see that ridership does correlate wtih absolute temperature peaking at around 50 degrees F
@@ -142,7 +142,7 @@ ggplot(WeatherRidersTotal, aes(x=tempDiff, y=Total_Riders, color=Schedule))+
    geom_point(alpha=.3)+
    geom_smooth()+
   ggtitle("Daily Temperature Difference and Bus Ridership")+
-  labs(x= "Temperature Difference (degrees F)", y="Total Riders")
+  labs(x= "Degrees (F) Below Historical Average)", y="Total Riders")
 ```
 
 Ridership drops off significantly on days where weather is significantly colder than norms, and is approximately constant for temps above norms
@@ -179,7 +179,7 @@ ggplot(niceRideDay, aes(x=dayTemp, y=numRiders, color=Schedule))+
    geom_smooth(se=FALSE)+
    geom_point(alpha=.3)+
    ggtitle("Temperature and Bike Ridership")+
-   labs(x="Degrees (F) Below Historical Average", y="Total Riders")
+   labs(x="Daily Temperature (Degrees F)", y="Total Riders")
 ```
 
 Unsuprisingly, more people ride bikes in warmer weather
