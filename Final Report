@@ -140,7 +140,7 @@ We see that ridership does correlate wtih absolute temperature peaking at around
 ```{r,message = FALSE, warning = FALSE}
 ggplot(WeatherRidersTotal, aes(x=tempDiff, y=Total_Riders, color=Schedule))+
    geom_point(alpha=.3)+
-   geom_smooth()+
+   geom_smooth(alpha=0)+
   ggtitle("Daily Temperature Difference and Bus Ridership")+
   labs(x= "Degrees (F) Below Historical Average)", y="Total Riders")
 ```
