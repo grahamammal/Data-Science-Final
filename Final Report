@@ -176,7 +176,7 @@ niceRideDay<-niceRideDay%>%
 Look at how NiceRide ridership correlates to temperature
 ```{R, message=FALSE}
 ggplot(niceRideDay, aes(x=dayTemp, y=numRiders, color=Schedule))+
-   geom_smooth()+
+   geom_smooth(se=FALSE)+
    geom_point(alpha=.3)+
    ggtitle("Temperature and Bike Ridership")+
    labs(x="Degrees (F) Below Historical Average", y="Total Riders")
@@ -187,7 +187,7 @@ Unsuprisingly, more people ride bikes in warmer weather
 Now look at how ridership correlates to departure from climate normals
 ```{R, message=FALSE}
 ggplot(niceRideDay, aes(x=tempDiff, y=numRiders, color=Schedule))+
-   geom_smooth()+
+   geom_smooth(se=FALSE)+
    geom_point(alpha=.3)+
     ggtitle("Daily Temperature Difference and Bike Ridership")+
   labs(x="Degrees (F) Below Historical Average", y="Total Riders")
