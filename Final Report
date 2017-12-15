@@ -179,7 +179,7 @@ ggplot(niceRideDay, aes(x=dayTemp, y=numRiders, color=Schedule))+
    geom_smooth()+
    geom_point(alpha=.3)+
    ggtitle("Temperature and Bike Ridership")+
-   labs(x="Daily Temperature (degrees F)", y="Total Riders")
+   labs(x="Degrees F Below Historical Average", y="Total Riders")
 ```
 
 Unsuprisingly, more people ride bikes in warmer weather
@@ -190,7 +190,7 @@ ggplot(niceRideDay, aes(x=tempDiff, y=numRiders, color=Schedule))+
    geom_smooth()+
    geom_point(alpha=.3)+
     ggtitle("Daily Temperature Difference and Bike Ridership")+
-  labs(x="Temperature Difference (degrees F)", y="Total Riders")
+  labs(x="Degrees F Below Historical Average", y="Total Riders")
 #Add color by weekend/weekday
 ```
 
