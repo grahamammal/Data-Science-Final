@@ -270,6 +270,10 @@ ggmap(twinCitiesMap)+
 
 
 ```{r}
+niceRide2016Clean<-niceRide2016%>%
+   mutate(startHour=hour(`Start date`)+minute(`Start date`)/60)
+
+
 niceRideDaily<-niceRide2016Clean%>%
    mutate(Schedule=wday(`Start date`, label=TRUE, abbr=TRUE))
 head(niceRideDaily)
@@ -311,8 +315,6 @@ gatheredDist<-closeDF%>%
 
 siteSample<-sample(gatheredDist$site_id, size=3)
 
-niceRide2016Clean<-niceRide2016%>%
-   mutate(startHour=hour(`Start date`)+minute(`Start date`)/60)
 
 
 
