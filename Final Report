@@ -8,17 +8,25 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+#Introduction
+Our group wanted to know if any relationship exists between Metro Transit Bus Systems and Nice Ride Bikesharing.  Through looking at what kinds of information the data gave us, we narrowed down our research to two main questions:
+
+1. What is the correlation between weather and ridership on Metro Transit and Nice Ride?
+2. How do geographical factors relate to Nice Ride and Metro Transit usage?
+
+From there, we took a closer look at each question.  While looking at weather, we examined many factors that could influence ridership, such as temperature, precipitation, and snowfall.  Through further analysis, we saw that there was no real correlation between precipitation, snowfall, and ridership.  Therefore, we focused on temperature, with the sub-question:
+1.How does temperature relate to usage?
+Specifically, we looked at ridership when temperature on a given day in 2016 varied from that area's average temperature over the last seven years.
+
+As for geographical factors, we pruned that broad research question down to:
+1. Does distance between bus stops and bike stations correlate with usage?
+2. How does Nice Ride usage vary over a day?
+3. Does distance relate to usage over a small period of a day?
+4. Are usage patterns different in different parts of the city?
+
+We were curious if the proximity of a Nice Ride station to a bus stop directly influenced ridership of that Nice Ride station.  To gain a deeper understanding, we looked at how Nice Ride usage rose and fell throughout a given day (weekday, Saturday, and Sunday).  Lastly, we examined the relationship between proximity of a Nice Ride station to a bus stop and usage of the bike station during five hours of a given day.  Initially, we were using three random bus stops for our analysis.  We then wondered about two of the most popular Nice Ride stations: one in downtown Minneapolis (likely used for business), and one along Lake Bede Maka Ska (likely used for leisure).  Through these more specific research questions, we were able to hypothesize that people combo their transit, meaning they get off a Metro Transit bus and go to a Nice Ride bike station to continue their journey. 
 
 
-
-#Main Questions:
-What is the correlation between weather and ridership on Metro Transit and Niceride?  
-How does the geographic closeness of Nice Ride stations and bus stops affect ridership?
-
-###Follow up Questions:
-
-1. How do Niceride usage patterns vary over the course of one weekday? (Do the stations less than 500 meters from a bus stop have spikes in usage when a bus lets out?) 
-2. What other weather factors besides temperature influence ridership of Nice Ride and Metro Transit?
 
 ##Data Collection Process 
 
