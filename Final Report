@@ -77,7 +77,7 @@ Data dimensions: 2884 x 6
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Load Libraries  
+First, we load the packages that we will need.
 ```{r, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(ggplot2)
@@ -89,7 +89,7 @@ library(rvest)
 library(geosphere)
 ```
 
-Read in data on NiceRide, the bike share for the twin cities
+We now read in data on NiceRide, the bike sharing service for the Twin Cities.
 ```{r, cache=TRUE, message = FALSE, warning = FALSE}
 niceRide2016<-read_csv("Nice_ride_trip_history_2016_season.csv")
 #Throw out empty rows and turn date variable into date object
@@ -99,7 +99,7 @@ niceRide2016<-niceRide2016%>%
 niceRideLocations<-read_csv("https://raw.githubusercontent.com/grahamammal/Data-Science-Final/master/Nice_Ride_2016_Station_Locations.csv")
 ```
 
-Read in data on MetroTransit
+We now read in data on MetroTransit, the public bus transportation system for the Twin Cities.
 ```{r, cache=TRUE, message = FALSE, warning = FALSE}
 metroStops<-read_csv("https://raw.githubusercontent.com/grahamammal/Data-Science-Final/master/bus-stops-Oct-2017.csv")
 metroRidership<-read_csv("https://raw.githubusercontent.com/grahamammal/Data-Science-Final/master/ridership-route-day-Jan2014-Oct2017.csv")
@@ -110,14 +110,14 @@ metroRidership<-metroRidership%>%
 
 #Weather analysis
 
-Read in data on weather for 2016
+We now read in data on weather in the Twin Cities for 2016.
 ```{r, cache=TRUE, message=FALSE, warning=FALSE}
 #source: http://www.dnr.state.mn.us/climate/twin_cities/listings.html
 #Had to copy and paste data from page into .txt file and read that in
 MinneapolisWeather<-read_csv(file="https://raw.githubusercontent.com/grahamammal/Data-Science-Final/master/Minneapolis%20Weather.txt", col_names = c("date", "maxTemp","minTemp","precip","snow","snowDepth"))
 ```
 
-Clean up data
+We now clean up the weather data.
 ```{r}
 MinneapolisWeather<-MinneapolisWeather%>%
    mutate(precip=as.double(replace(precip,precip=="T",0)))%>%#Replaces trace value for precip with 0
@@ -125,7 +125,7 @@ MinneapolisWeather<-MinneapolisWeather%>%
    mutate(snowDepth=as.double(replace(snowDepth,snowDepth=="T",0)))#Replaces trace value for snowDepth with 0
 ```
 
-Show how divergence from daily mean effects ridership (only work with 2016 because thats time frame for nice ride data)
+We now show how divergence from daily mean influences ridership (only work with 2016 because that's the time frame for Nice Ride data)
 ```{r}
 #Add weather data to info on bus ridership
 WeatherRiders<-metroRidership%>%
@@ -152,7 +152,7 @@ WeatherRidersTotal<-WeatherRiders%>%
    filter(Schedule!="Reduced"&Schedule!="Holiday")
 ```
 
-Visualization of how ridership is dependent on temperature of a day and how it depends on divergence from historical temperature on that day
+This is a visualization of how ridership is dependent on temperature of a day and how it depends on divergence from historical temperature on that day.
 ```{r,message = FALSE, warning = FALSE}
 #Visualize ridership on a day, seperated by Schedule
 ggplot(WeatherRidersTotal, aes(x=dayTemp, y=Total_Riders, color=Schedule))+
@@ -162,7 +162,7 @@ ggplot(WeatherRidersTotal, aes(x=dayTemp, y=Total_Riders, color=Schedule))+
   labs(x="Daily Temperature (degrees F)", y= "Total Riders")
 ```
 
-We see that ridership does correlate wtih absolute temperature peaking at around 50 degrees F
+We see that ridership does correlate wtih absolute temperature peaking at around 50 degrees F.
 ```{r,message = FALSE, warning = FALSE}
 #Plot rudership vs Historical, seperated by Schedule
 ggplot(WeatherRidersTotal, aes(x=tempDiff, y=Total_Riders, color=Schedule))+
@@ -172,7 +172,7 @@ ggplot(WeatherRidersTotal, aes(x=tempDiff, y=Total_Riders, color=Schedule))+
    labs(x= "Degrees F Below Historical Average", y="Total Riders")
 ```
 
-Ridership drops off significantly on days where weather is significantly colder than norms, and is approximately constant for temps above norms
+Ridership drops off significantly on days where weather is significantly colder than norms, and is approximately constant for temps above norms.
 
 
 ##Doing same weather analysis with ridership
@@ -200,7 +200,7 @@ niceRideDay<-niceRideDay%>%
    mutate(tempDiff=(maxTemp+minTemp)/2-dayTemp)
 ```
 
-Look at how NiceRide ridership correlates to temperature
+We now look at how Nice Ride ridership correlates to temperature.
 ```{R, message=FALSE}
 #Plot actual temperature vs Ridership
 ggplot(niceRideDay, aes(x=dayTemp, y=numRiders, color=Schedule))+
@@ -210,9 +210,9 @@ ggplot(niceRideDay, aes(x=dayTemp, y=numRiders, color=Schedule))+
    labs(x="Daily Temperature (degrees F)", y="Total Riders")
 ```
 
-Unsuprisingly, more people ride bikes in warmer weather
+Unsuprisingly, more people ride bikes in warmer weather.
 
-Now look at how ridership correlates to departure from climate normals
+We now look at how ridership correlates to departure from climate normals.
 ```{R, message=FALSE}
 #Plot historical temp difference against ridership
 ggplot(niceRideDay, aes(x=tempDiff, y=numRiders, color=Schedule))+
@@ -224,7 +224,7 @@ ggplot(niceRideDay, aes(x=tempDiff, y=numRiders, color=Schedule))+
 #Add color by weekend/weekday
 ```
 
-People ride much less on days with much lower temperatures than normals, and more on days higher than normals
+We can see that people ride much less on days with much lower temperatures than normals, and more on days higher than normals.
 
 #Geography and Bike and Bus Ridership
 Calculate minimum distances from bike stations to bus stops
@@ -314,7 +314,7 @@ ggplot(niceRideDaily, aes(x=startHour, color=Schedule, fill=Schedule))+
    labs(x="Start Hour")+
    ggtitle("Nice Ride Usage Over a Day")
 ```
-Looking at this graph we see that on weekdays there are three distinct spikes in usage, on in the morning at around 8AM, one at around noon, and one at around 5PM. On weekends these spikes don't exist, and instead we see usage steadily climb over the day peaking at around 3PM. The stations are busiest on weekdays from 3PM to 8PM, so we will be using this short period of time to understand how usage and distance relate over a small portion of a day.  
+Looking at this graph, we see that on weekdays there are three distinct spikes in usage, on in the morning at around 8AM, one at around noon, and one at around 5PM. On weekends these spikes don't exist, and instead we see usage steadily climb over the day peaking at around 3PM. The stations are busiest on weekdays from 3PM to 8PM, so we will be using this short period of time to understand how usage and distance relate over a small portion of a day.  
 
 We now begin this analysis of distance and usage for a small period of time. We first calculate the distances between all bus stops and stations.
 ```{r}
