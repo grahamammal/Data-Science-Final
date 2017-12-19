@@ -293,6 +293,7 @@ ggmap(twinCitiesMap)+
 ```
 Each dot on the map represents one Nice Ride station.  The sizing of the dots is based on number of total riders over the course of 2016 at that station.  The bigger the dot, the more that station was used.  The color of the dots represents how close that station was to a bus stop.  If the dot color is at the blue end of the spectrum, the Nice Ride station is within 200 meters from a bus stop.  If the dot color is orange, it is around 600 meters away from a bus stop.  Through this visualization, we can see that the closer a bike station is to a bus stop, the more usage it gets.
 
+Now that we know how usage is related to distance over the entire year, we narrow our focus down to how these relationships change over the course of the day. To begin we first look into how Nice Ride usage varies over the course of a single day.
 ```{r}
 #adds time in decimal hours from midnight
 niceRideDaily<-niceRide2016%>%
@@ -307,11 +308,12 @@ niceRideDaily$Schedule=plyr::revalue(niceRideDaily$Schedule, replace=c("Mon"="We
 #plots the time a ride began against number of riders
 ggplot(niceRideDaily, aes(x=startHour, color=Schedule, fill=Schedule))+
    geom_density(alpha=.3)+
-   labs(x="Start Hour")
+   labs(x="Start Hour")+
+   ggtitle("Nice Ride Usage Over a Day")
 ```
+Looking at this graph we see that on weekdays there are three distinct spikes in usage, on in the morning at around 8AM, one at around noon, and one at around 5PM. On weekends these spikes don't exist, and instead we see usage steadily climb over the day peaking at around 3PM. The stations are busiest on weekdays from 3PM to 8PM, so we will be using this short period of time to understand how usage and distance relate over a small portion of a day.  
 
-
-Calculate distances between bike stations and bus stops
+We now begin this analysis of distance and usage for a small period of time. We first calculate the distances between all bus stops and stations.
 ```{r}
 #calculates the distances between all the stops and stations
 distanceMatrix<-distm(x=niceRideLatLongs, y=busLatLongs, fun = distHaversine)
@@ -325,7 +327,7 @@ closeDF<-distanceDF%>%
    filter(minDist<200)
 ```
 
-Select a set of 3 random bus stations and understand how stations less than 500 meters from these stations change in usage over time
+We now select a set of 3 random bus stops and look at only those Nice Ride stations within 500 meters of these bus stops.
 ```{r}
 set.seed(1)#keeps sampled stops same throughout differnt runs of code
 
@@ -357,7 +359,7 @@ niceRideSampledClose<-niceRide2016Work%>%
 levels(niceRideSampledClose$site_id)<-c("Stop 1", "Stop 2", "Stop 3")#renames site_id to reflect arbitrary nature of choosing
 ```
 
-Visualize how bike stations near to selected bus stations vary in usage between 3PM and 8PM
+We now visualize how ridership varies from 3PM to 8PM on weekdays at the Nice Ride stations near the selected stops. 
 ```{r}
 #Plots usage of nice ride stations less than 500m from selected stops over short time period
 ggplot()+
@@ -367,21 +369,16 @@ ggplot()+
    labs(x="Start Hour")+
    ggtitle("Bike Ridership For Stations Close to Stops")
 ```
+The density plot represents usage at all stations in the city. Differences between the two suggest local factors influencing ridership. Spikes at 5PM are likely correlated with people getting off work. However other increases in usage come from other factors, like at around 7:30PM in Stop 3. These could be related to the bus stop itself, such as riders getting off at the stop using Nice Ride stations nearby, or it could be related to other unknown factors that affect usage at Nice Ride stations in that area. 
 
+We also see that there are a significant number of trips counted at each stop.
 ```{r}
 #calculates amount of trips the graph represents
 niceRideSampledClose%>%
    count(site_id)
 ```
 
-
-We see spikes and dips in usage that at regular intervals, perhaps indicating a relationship between a bus letting out people and those people using NiceRide
-
-
-
-
-
-Find representative bike station for downtown St. Paul, Minneapolis, and Lake  Bde Maka Ska
+To understand some of how broader geographical factors could relate to usage at stations, we look at two representative stations, one in the middle of downtown Minneapolis isolate rider patterns for users who use it for work and commuting around downtown, and a Nice Ride station on Lake Bde Maka Ska, to understand usage for recreational users. 
 ```{r}
 #latitude and longitude of center of minneapolis and nice ride station at Bde Maka Ska, sourced from google maps
 minnCenter<-c(-93.2650, 44.9778)
@@ -397,8 +394,7 @@ bdeClosest<-as.data.frame(t(distm(lakeBdeMakaSka, niceRideLatLongs)))%>%
    filter(V1==min(V1))
 ```
 
-Find closest bus stop to these stations
-
+We then do the same type of plot as before for these stations to understand trends within them. 
 ```{r}
 #filters out all rides not from these representative stops, and adds time info and limits time to 3pm to 8pm on weekdays
 niceRideRep<-niceRide2016%>%
@@ -421,8 +417,17 @@ ggplot()+
    ggtitle("Ridership for Representative Station")
 ```
 
+We see that people who use the lake station use it very differently from the downtown station. The spike in usage at around 5PM doesn't exist at the lake station, and it is overall a smoother usage pattern. This suggests that at stations used for recreation there are fewer external factors that change ridership than at stations in downtown. This would correspond to the idea of bus stops nearby changing usage patterns as there are more within the downtown region than near this lake station, but it is certainly not conclusive. 
+
+We do see that there are plenty of trips at these stations so random fluctuations in usage are likely not significant to the visualization.
 ```{R}
 #Gives total number of trips for these two stations in this time period
 niceRideRep%>%
    count(stationName)
 ```
+
+#Conclusions
+
+
+
+
