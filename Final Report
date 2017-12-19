@@ -465,13 +465,3 @@ ggplot()+
 niceRideRep%>%
    count(stationName)
 ```
-
-
-
-##Individual Contributions  
-Zain: Worked on Nice Ride relation with Precipitation in inches. Wrangled some data and made 3 visualizations for precipitation vs number of people using Nice ride bike system. Found that there was no corelation between the two.  
-Marshall: Worked on deepening understanding of the relationship between distance between bus stops and bike stations and ridership over time. Also worked on cleaning up code and formatting.  
-Vishal: Worked on making the presentation, exporting the data from file to the presentation.  
-Colleen: Manipulated data and worked on visualizing snow depth's correlation to metro transit ridership, worked on presentation, reworded initial questions and brainstormed/reworded new research questions. 
-
-
