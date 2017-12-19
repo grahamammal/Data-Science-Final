@@ -290,9 +290,6 @@ Visualization of Nice Ride stations in the twin cities- the bigger the circle, t
 
 
 
-Visualize how proximity of a Niceride station to a bus stop affects ridership
-
-
 Now that we have a basic understanding of where the Minneapolis Metro Transit stop and Nice Ride Stations are located, we want to see if distance from a bike station to a bus stop has an influence on ridership.  
 ```{r, warning=FALSE, message=FALSE}
 #Plots location of nice ride station, with bigger dots for more usage and oranger for further minimum distance to bus stop
