@@ -5,9 +5,6 @@ date: "December 6th, 2017"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 #Introduction
 Our group wanted to know if any relationship exists between Metro Transit Bus Systems and Nice Ride Bikesharing.  Through looking at what kinds of information the data gave us, we narrowed down our research to two main questions:
 
@@ -69,6 +66,10 @@ Data Source: "http://www.dnr.state.mn.us/climate/twin_cities/listings.html", the
 Data Description: Gives the date, max temperature, min temperature, amount of percpititaion, amount of snow, and amount of snow on the ground  
 Data Limitations The specific data we're using is the weather data between 2010 and 2017. It's missing the average tempearture for a day, but the min and max are probably enough to work with  
 Data dimensions: 2884 x 6  
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
 Load Libraries  
 ```{r, message = FALSE, warning = FALSE}
