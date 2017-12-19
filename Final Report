@@ -171,7 +171,7 @@ Ridership drops off significantly on days where weather is significantly colder 
 
 ##Doing same weather analysis with ridership
 First get ridership of bikes by day
-```{r}
+```{r, warning=FALSE, message=FALSE}
 #clean up date variable in data and total riders on that date
 niceRideDay<-niceRide2016%>%
    mutate(startDate=niceRide2016$`Start date`)%>%
