@@ -435,6 +435,7 @@ niceRideRep%>%
 ```
 
 #Conclusions
+Our work shows that the difference between historical temperature and actual temperature on a day does correlate with usage of both Metro Transit and Nice Ride in similar ways. When the temperature is much colder than average for that day, fewer people use the service. We have also established that there is some broad correlation between usage of Nice Ride stations and the distance to nearby bus stops. However, we have not been able to establish that this correlation exists because people get off of bus stops and use Nice Ride stations nearby. All we discovered was that there are shared usage patterns at Nice Ride stations near given bus stops, and that these usage patterns exist in the city and less so at parks, which lends credit to the idea of people combining transit methods in the city where they wouldn't need to at parks. But this is far from conclusive, and much more sophisticated analyses would need to be done to establish this as the cause of the usage patterns and not caused by some other set of factors.
 
 
 
