@@ -251,6 +251,7 @@ ggmap(twinCitiesMap)+
    geom_point(data=metroStops, aes(x=site_longitude, y=site_latitude), alpha=.5)+
    ggtitle("Minneapolis Bus Stop Locations")
 ```
+
 Here, we can see the many Metro Transit stations that are in Minneapolis, with a large cluster of them in located in downtown Minneapolis.
 
 ```{r, warning=FALSE, message=FALSE}
@@ -259,6 +260,7 @@ ggmap(twinCitiesMap)+
    geom_point(data=niceRideLocations, aes(x=Longitude, y=Latitude), alpha=.5)+
    ggtitle("Minneapolis Nice Ride Station Locations")
 ```
+
 We can see that there are much fewer Nice Ride stations than Metro Transit bus stops, with most stations clustered in the center of Minneapolis and near parks.
 
 Understand how usage at bike stations is related to geography
@@ -275,7 +277,7 @@ niceRideProximityRiders<-niceRide2016%>%
 
 
 
-Visualization of niceride stations in the twin cities- the bigger the circle, the more people used the station on the day 11/6/16.
+Visualization of Nice Ride stations in the twin cities- the bigger the circle, the more people used the station on the day 11/6/16.
 
 
 
@@ -291,6 +293,7 @@ ggmap(twinCitiesMap)+
   ggtitle("Nice Ride Usage and Distance from Stop")+
   labs(color='Proximity to Stop', size='Riders')
 ```
+
 Each dot on the map represents one Nice Ride station.  The sizing of the dots is based on number of total riders over the course of 2016 at that station.  The bigger the dot, the more that station was used.  The color of the dots represents how close that station was to a bus stop.  If the dot color is at the blue end of the spectrum, the Nice Ride station is within 200 meters from a bus stop.  If the dot color is orange, it is around 600 meters away from a bus stop.  Through this visualization, we can see that the closer a bike station is to a bus stop, the more usage it gets.
 
 Now that we know how usage is related to distance over the entire year, we narrow our focus down to how these relationships change over the course of the day. To begin we first look into how Nice Ride usage varies over the course of a single day.
