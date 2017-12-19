@@ -158,6 +158,7 @@ Visualization of how ridership is dependent on temperature of a day and how it d
 ggplot(WeatherRidersTotal, aes(x=dayTemp, y=Total_Riders, color=Schedule))+
    geom_smooth()+
    geom_point(alpha=.3)+
+   scale_colour_manual(values=c(Sunday="salmon",Weekday="skyblue",Saturday="orchid"))+
    ggtitle("Temperature and Bus Ridership")+
   labs(x="Daily Temperature (degrees F)", y= "Total Riders")
 ```
@@ -170,6 +171,7 @@ We observed that ridership does correlate with absolute temperature peaking at a
 ggplot(WeatherRidersTotal, aes(x=tempDiff, y=Total_Riders, color=Schedule))+
    geom_point(alpha=.3)+
    geom_smooth()+
+   scale_colour_manual(values=c(Sunday="salmon",Weekday="skyblue",Saturday="orchid"))+
    ggtitle("Daily Temperature Difference and Bus Ridership")+
    labs(x= "Degrees F Below Historical Average", y="Total Riders")
 ```
@@ -209,6 +211,7 @@ Look at how NiceRide ridership correlates to temperature
 ggplot(niceRideDay, aes(x=dayTemp, y=numRiders, color=Schedule))+
    geom_smooth()+
    geom_point(alpha=.3)+
+   scale_colour_manual(values=c(Sunday="salmon",Weekday="skyblue",Saturday="orchid"))+
    ggtitle("Temperature and Bike Ridership")+
    labs(x="Daily Temperature (degrees F)", y="Total Riders")
 ```
@@ -222,6 +225,7 @@ Now look at how ridership correlates to departure from climate normals
 ggplot(niceRideDay, aes(x=tempDiff, y=numRiders, color=Schedule))+
    geom_smooth()+
    geom_point(alpha=.3)+
+   scale_colour_manual(values=c(Sunday="salmon",Weekday="skyblue",Saturday="orchid"))+
     ggtitle("Daily Temperature Difference and Bike Ridership")+
   labs(x="Degrees F Below Historical Average", y="Total Riders")
    
